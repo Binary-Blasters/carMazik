@@ -55,6 +55,39 @@ const sellerController = {
         new ApiResponse(200, seller, "Seller profile fetched successfully")
       );
   }),
+  updateSellerProfile: asyncHandler(async (req, res) => {
+    const {
+      shopName,
+      gstNumber,
+      panNumber,
+      aadhaarNumber,
+      accountNumber,
+      ifscCode,
+      address,
+    } = req.body;
+
+    const seller = await Seller.findOneAndUpdate(
+      { userid: req.user?._id },
+      {
+        shopName,
+        gstNumber,
+        panNumber,
+        aadhaarNumber,
+        bankDetails: { accountNumber, ifscCode },
+        address,
+      },
+      { new: true }
+    );
+    if (!seller) {
+      throw new ApiError(404, "Seller not found");
+    }
+    res
+      .status(200)
+      .json(
+        new ApiResponse(200, seller, "Seller profile updated successfully")
+      );
+  }),
+ 
 };
 
 export { sellerController };
