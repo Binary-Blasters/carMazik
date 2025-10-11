@@ -1,15 +1,34 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+
+import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } from 'react-router'
 import './App.css'
+import Layout from './Layout'
+import Home from './pages/Home'
+import Featured from './pages/Featured'
+import About from './pages/About'
+import Contact from './pages/Contact'
+import Login from './pages/Login'
+import Register from './pages/Register'
+
+
 
 function App() {
-  const [count, setCount] = useState(0)
+  const router = createBrowserRouter(
+    createRoutesFromElements(
+      <Route path='' element={<Layout/>}>
+      <Route path='/' element={<Home/>}/>
+      <Route path="/featured" element={<Featured />} />
+       <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/login" element={<Login/>}/>
+        <Route path="register" element={<Register />} />
+
+      </Route>
+    )
+  )
+  
 
   return (
-    <>
-  <div className='bg-black text-white font-black text-2xl text-center p-4'>Hello carMazik</div>
-    </>
+  <RouterProvider router={router}/>
   )
 }
 
