@@ -59,8 +59,6 @@ const sellerController = {
     const {
       shopName,
       gstNumber,
-      panNumber,
-      aadhaarNumber,
       accountNumber,
       ifscCode,
       address,
@@ -71,8 +69,6 @@ const sellerController = {
       {
         shopName,
         gstNumber,
-        panNumber,
-        aadhaarNumber,
         bankDetails: { accountNumber, ifscCode },
         address,
       },

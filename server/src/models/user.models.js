@@ -37,7 +37,8 @@ const userSchema = new mongoose.Schema(
         type : Boolean,
         default : false
 
-    }
+    },
+    reSetPassOtp : String,
   },
   { timestamps: true }
 );

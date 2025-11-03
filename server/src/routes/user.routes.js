@@ -6,11 +6,13 @@ const router = express.Router()
 
 router.use(verifyJWT("user"))
 
-router.route("/").get(userController.getUserProfile)
-router.route("/").patch(userController.updateUserProfile)
-router.route("/change-password").patch(userController.changePassword)
-router.route("/wishlist/add").post(userController.addToWishList)
-router.route("/wishlist/remove").delete(userController.removeFromWishList)
-router.route("/wishlist").get(userController.getUserWishList)
+router.route("/").get(verifyJWT(), userController.getUserProfile)  //checked
+router.route("/").patch(verifyJWT(), userController.updateUserProfile)  //checked
+router.route("/change-password").patch(verifyJWT(), userController.changePassword) //checked
+
+//waitnig for car upload route to be created in car.routes.js
+router.route("/wishlist/add").post(verifyJWT(), userController.addToWishList)
+router.route("/wishlist/remove").delete(verifyJWT(), userController.removeFromWishList)
+router.route("/wishlist").get(verifyJWT(), userController.getUserWishList)
 
 export default router

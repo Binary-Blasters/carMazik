@@ -1,35 +1,33 @@
-
-import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } from 'react-router'
-import './App.css'
-import Layout from './Layout'
-import Home from './pages/Home'
-import Featured from './pages/Featured'
-import About from './pages/About'
-import Contact from './pages/Contact'
-import Login from './pages/Login'
-import Register from './pages/Register'
-
-
+import "./App.css";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+import Home from "./pages/Home";
+import Listings from "./pages/Listings";
+import CarDetails from "./pages/CarDetails";
+import { Toaster } from "./components/ui/Toaster";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import Layout from "./Layout";
 
 function App() {
-  const router = createBrowserRouter(
-    createRoutesFromElements(
-      <Route path='' element={<Layout/>}>
-      <Route path='/' element={<Home/>}/>
-      <Route path="/featured" element={<Featured />} />
-       <Route path="/about" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/login" element={<Login/>}/>
-        <Route path="register" element={<Register />} />
-
-      </Route>
-    )
-  )
-  
-
   return (
-  <RouterProvider router={router}/>
-  )
+    <div className="App">
+      <BrowserRouter>
+       <Layout>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/listings" element={<Listings />} />
+          <Route path="/car/:id" element={<CarDetails />} />
+          {/* <Route path="/login" element={<Login />} /> */}
+          <Route path="/signup" element={<Signup />} />
+        </Routes>
+        </Layout>
+       
+        <Toaster />
+      </BrowserRouter>
+    </div>
+  );
 }
 
-export default App
+export default App;

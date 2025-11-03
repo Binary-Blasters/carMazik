@@ -2,10 +2,11 @@ import { User } from "../models/user.models.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { sendMail } from "../utils/sendMail.js";
 
 const authController = {
   register: asyncHandler(async (req, res) => {
-    const { name, email, username, password, phonenumber,role } = req.body;
+    const { name, email, username, password, phonenumber, role } = req.body;
     if (!name || !email || !username || !password || !phonenumber) {
       throw new ApiError(400, "Al fields are required");
     }
@@ -24,7 +25,7 @@ const authController = {
       username,
       password,
       phonenumber,
-      role : role || "user"
+      role: role || "user",
     });
     await user.save();
 
@@ -36,27 +37,35 @@ const authController = {
       .json(new ApiResponse(200, user, "User register succesfully"));
   }),
   login: asyncHandler(async (req, res) => {
-    const { username, email, phonenumber, password } = req.body;
-    if ((!username && !email && !phonenumber) || !password) {
+    const { identifier, password } = req.body;
+    if (!identifier || !password) {
       throw new ApiError(
         400,
         "Please provide identifier (username/email/phone) and password"
       );
     }
-    let user;
-    if (username) {
-      user = await User.findOne({ username });
-    } else if (email) {
-      user = await User.findOne({ email });
-    } else if (phonenumber) {
-      user = await User.findOne({ phonenumber });
-    }
+
+    const user = await User.findOne({
+      $or: [
+        { email: identifier },
+        { username: identifier },
+        { phone: identifier },
+      ],
+    });
+
     if (!user) {
       throw new ApiError(404, "User not found");
     }
     const isPasswordCorrect = await user.isPasswordCorrect(password);
     if (!isPasswordCorrect) {
       throw new ApiError(400, "Worng password ");
+    }
+
+    if (user.isBlocked) {
+      throw new ApiError(
+        403,
+        "Your account has been blocked please contact admin"
+      );
     }
     const accessToken = await user.genarateAccessToken();
 
@@ -82,7 +91,55 @@ const authController = {
       .clearCookie("accessToken", option)
       .json(new ApiResponse(200, "User Logged Out SuccesFully"));
   }),
-  // resetPassword: 
+  sendResetPassOTP: asyncHandler(async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+      throw new ApiError(400, "Email is required");
+    }
+    const isUserExist = await User.findOne({ email });
+    if (!isUserExist) {
+      throw new ApiError(404, "User not found with this email");
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    isUserExist.reSetPassOtp = otp;
+    await isUserExist.save();
+
+    await sendMail({
+      name: isUserExist.name,
+      email: isUserExist.email,
+      message: `Your password reset OTP is ${otp}`,
+    });
+
+    setTimeout(async () => {
+      isUserExist.reSetPassOtp = null;
+      await isUserExist.save();
+    }, 15 * 60 * 1000);
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, "OTP sent to your email address"));
+  }),
+  resetPassword: asyncHandler(async (req, res) => {
+    const { otp, newPassword } = req.body;
+
+    if (!otp || !newPassword) {
+      throw new ApiError(400, "OTP and new password are required");
+    }
+    const user = await User.findOne({ reSetPassOtp: otp });
+    if (!user) {
+      throw new ApiError(400, "Invalid OTP");
+    }
+    user.password = newPassword;
+    user.reSetPassOtp = null;
+    await user.save();
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, "Password reset successfully"));
+  }),
 };
 
 export { authController };

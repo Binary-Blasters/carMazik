@@ -20,7 +20,7 @@ const verifyJWT = (role) =>
     }
     // console.log(decodedToken);
 
-    if (decodedToken.role !== role) {
+      if (role && decodedToken.role !== role) {
       throw new ApiError(403, "Access denied");
     }
     const user = await User.findById(decodedToken._id);

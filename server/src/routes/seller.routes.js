@@ -7,11 +7,18 @@ const router = express.Router();
 
 router
   .route("/")
-  .post(verifyJWT(), sellerController.applyForSeller)
-  .get(
+  .post(verifyJWT(), sellerController.applyForSeller) //checked
+  .get(                                               //checked
     verifyJWT("seller"),
     checkSellerApproval,
     sellerController.getSellerProfile
+  )
+  .patch(                                             //checked
+    verifyJWT("seller"),
+    checkSellerApproval,
+    sellerController.updateSellerProfile
   );
+
+
 
 export default router;

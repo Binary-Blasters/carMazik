@@ -1,132 +1,288 @@
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Search, Shield, Award, HeadphonesIcon, CheckCircle, TrendingUp, Star, ArrowRight } from 'lucide-react';
+import { Button } from '../components/ui/button';
+import { Card, CardContent } from '../components/ui/Card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
+import CarCard from '../components/CarCard';
+import { mockCars, brands, budgetRanges } from '../mockData';
 
-import React from "react";
-import { motion } from "framer-motion";
+const Home = () => {
+  const navigate = useNavigate();
+  const [selectedBrand, setSelectedBrand] = React.useState('');
+  const [selectedBudget, setSelectedBudget] = React.useState('');
 
-const featuredCars = [
-  { id: 1, name: "Mazik GT", price: "₹ 32,49,000", specs: "450 HP · 3.2s 0-100km/h · AWD", image: "https://images.unsplash.com/photo-1542362567-b07e54358753?q=80&w=1800&auto=format&fit=crop&ixlib=rb-4.0.3&s=5f4f2c1d1b4f1a9a9a6f6e1b1a1c0d2e" },
-  { id: 2, name: "CarMazik Lux", price: "₹ 42,99,000", specs: "380 HP · 0.8L turbo · RWD", image: "https://images.unsplash.com/photo-1511910849309-1b58c1a84f45?q=80&w=1600&auto=format&fit=crop&ixlib=rb-4.0.3&s=2a2b6e3f7b7a8c0d1e2f3a4b5c6d7e8f" },
-  { id: 3, name: "Mazik Urban", price: "₹ 15,99,000", specs: "120 HP · Efficient · Compact", image: "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?q=80&w=1600&auto=format&fit=crop&ixlib=rb-4.0.3&s=3c2a1b4d6e7f8a9b0c1d2e3f4a5b6c7d" },
-];
+  const featuredCars = mockCars.slice(0, 4);
 
-function Hero() {
+  const handleSearch = () => {
+    const params = new URLSearchParams();
+    if (selectedBrand && selectedBrand !== 'All Brands') {
+      params.append('brand', selectedBrand);
+    }
+    if (selectedBudget) {
+      params.append('budget', selectedBudget);
+    }
+    navigate(`/listings?${params.toString()}`);
+  };
+
+  const categories = [
+    { name: 'Hatchback', count: 150, image: 'https://images.unsplash.com/photo-1617469767053-d3b523a0b982?w=400' },
+    { name: 'Sedan', count: 120, image: 'https://images.unsplash.com/photo-1590362891991-f776e747a588?w=400' },
+    { name: 'SUV', count: 200, image: 'https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=400' },
+    { name: 'Luxury', count: 80, image: 'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=400' },
+  ];
+
+  const testimonials = [
+    {
+      name: 'Rajesh Kumar',
+      location: 'Mumbai',
+      rating: 5,
+      comment: 'Excellent service! Got my dream car at a great price. The entire process was smooth and transparent.',
+      image: 'https://i.pravatar.cc/150?img=12'
+    },
+    {
+      name: 'Priya Sharma',
+      location: 'Delhi',
+      rating: 5,
+      comment: 'Very professional team. The car quality was exactly as described. Highly recommend CarHub!',
+      image: 'https://i.pravatar.cc/150?img=5'
+    },
+    {
+      name: 'Amit Patel',
+      location: 'Bangalore',
+      rating: 5,
+      comment: 'Best platform for buying used cars. The warranty and certification gave me peace of mind.',
+      image: 'https://i.pravatar.cc/150?img=33'
+    },
+  ];                                                                                                                                                                                                                                                
+
   return (
-    <section className="relative pt-24 md:pt-28 pb-10 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6 md:px-8 lg:px-12 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-        <motion.div initial={{ opacity: 0, x: -40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight text-white">
-            Discover Your Next <span className="text-red-500">Drive</span>
-          </h1>
-          <p className="mt-4 text-gray-300 max-w-xl">
-            CarMazik curates the best vehicles — performance, luxury and everyday reliability.
-          </p>
-          <div className="mt-6 flex gap-3 flex-wrap">
-            <button className="px-6 py-3 bg-red-600 rounded-full text-white font-semibold hover:bg-red-500 transition">Explore Cars</button>
-            <button className="px-6 py-3 border border-gray-700 rounded-full text-gray-200 hover:bg-white/5 transition">Quick Tour</button>
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero Section */}
+      <section className="relative bg-gradient-to-br from-blue-50 via-white to-orange-50 py-20">                          
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-4">
+              Find Your <span className="bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">Perfect Car</span>
+            </h1>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Choose from 1000+ certified cars with warranty and best prices
+            </p>
           </div>
-        </motion.div>
-        <motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}>
-          <div className="relative rounded-3xl overflow-hidden shadow-2xl">
-            <img src={featuredCars[0].image} alt="hero car" className="w-full h-[480px] object-cover brightness-90" />
-            <div className="absolute left-6 bottom-6 bg-gradient-to-r from-red-700/60 to-transparent backdrop-blur-sm rounded-2xl p-4 w-[70%]">
-              <div className="text-xs text-gray-100">Featured</div>
-              <div className="mt-1 font-semibold text-white text-lg">{featuredCars[0].name}</div>
-              <div className="mt-1 text-sm text-gray-200">{featuredCars[0].specs} • {featuredCars[0].price}</div>
+
+          {/* Search Box */}
+          <Card className="max-w-4xl mx-auto shadow-xl">
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Select value={selectedBrand} onValueChange={setSelectedBrand}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Brand" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {brands.map((brand) => (
+                      <SelectItem key={brand} value={brand}>
+                        {brand}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={selectedBudget} onValueChange={setSelectedBudget}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Budget" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {budgetRanges.map((range) => (
+                      <SelectItem key={range.label} value={range.label}>
+                        {range.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Button
+                  onClick={handleSearch}
+                  className="bg-gradient-to-r from-blue-600 to-orange-500 hover:from-blue-700 hover:to-orange-600 text-white"
+                >
+                  <Search className="h-5 w-5 mr-2" />
+                  Search Cars
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-12 max-w-4xl mx-auto">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-blue-600 mb-1">1000+</div>
+              <div className="text-gray-600">Quality Cars</div>
             </div>
-            <div className="absolute -top-20 -right-40 w-72 h-72 bg-gradient-to-br from-white/5 to-transparent rounded-full blur-3xl" />
+            <div className="text-center">
+              <div className="text-3xl font-bold text-blue-600 mb-1">50+</div>
+              <div className="text-gray-600">Cities</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-blue-600 mb-1">10000+</div>
+              <div className="text-gray-600">Happy Customers</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-blue-600 mb-1">98%</div>
+              <div className="text-gray-600">Satisfaction</div>
+            </div>
           </div>
-        </motion.div>
-      </div>
-    </section>
-  );
-}
-
-function FeaturedSection() {
-  return (
-    <section className="py-12">
-      <div className="max-w-7xl mx-auto px-6 md:px-8 lg:px-12">
-        <h2 className="text-2xl font-bold text-white mb-6">Featured Cars</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {featuredCars.map((car, idx) => (
-            <motion.div key={car.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.1 }} className="rounded-2xl overflow-hidden bg-gradient-to-b from-white/3 to-black/20 border border-white/6">
-              <div className="relative">
-                <img src={car.image} alt={car.name} className="w-full h-44 object-cover" />
-                <div className="absolute left-3 top-3 bg-black/40 px-3 py-1 rounded-full text-xs text-white">{car.name.split(' ')[0]}</div>
-              </div>
-              <div className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-white font-semibold">{car.name}</div>
-                    <div className="text-xs text-gray-300 mt-1">{car.specs}</div>
-                  </div>
-                  <div className="text-red-400 font-bold">{car.price}</div>
-                </div>
-                <div className="mt-4 flex items-center gap-3">
-                  <button className="flex-1 py-2 rounded-lg bg-red-600 text-white font-medium shadow">View</button>
-                  <button className="px-3 py-2 rounded-lg border border-gray-700 text-gray-200">Compare</button>
-                </div>
-              </div>
-            </motion.div>
-          ))}
         </div>
-      </div>
-    </section>
-  );
-}
+      </section>
 
-function AboutSection() {
-  return (
-    <section className="py-12 border-t border-white/6">
-      <div className="max-w-6xl mx-auto px-6 md:px-8 lg:px-12 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-        <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}>
-          <h3 className="text-3xl text-white font-bold">Why CarMazik?</h3>
-          <p className="mt-4 text-gray-300">We blend expert curation with transparent pricing and a premium buying experience. Each vehicle undergoes a multi-point inspection and is hand-selected by our team.</p>
-          <ul className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm text-gray-300">
-            <li className="bg-white/6 p-3 rounded-lg">Certified inspections</li>
-            <li className="bg-white/6 p-3 rounded-lg">7-day test drive policy</li>
-            <li className="bg-white/6 p-3 rounded-lg">On-demand finance options</li>
-            <li className="bg-white/6 p-3 rounded-lg">Doorstep delivery</li>
-          </ul>
-          <div className="mt-6 flex gap-3">
-            <button className="px-5 py-2 rounded-full bg-red-600 text-white font-semibold shadow">Get Started</button>
-            <button className="px-5 py-2 rounded-full border border-white/8 text-gray-200">Learn More</button>
+      {/* Browse by Category */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Browse by Category</h2>
+            <p className="text-gray-600">Explore cars by body type</p>
           </div>
-        </motion.div>
-        <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="relative">
-          <div className="rounded-2xl overflow-hidden shadow-2xl">
-            <img alt="about car" src={featuredCars[2].image} className="w-full object-cover h-80" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {categories.map((category) => (
+              <Link
+                key={category.name}
+                to={`/listings`}
+                className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300"
+              >
+                <img
+                  src={category.image}
+                  alt={category.name}
+                  className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-4">
+                  <h3 className="text-white text-xl font-bold">{category.name}</h3>
+                  <p className="text-white/80 text-sm">{category.count}+ Cars</p>
+                </div>
+              </Link>
+            ))}
           </div>
-        </motion.div>
-      </div>
-    </section>
-  );
-}
+        </div>
+      </section>
 
-function CTASection() {
-  return (
-    <section className="py-12 mt-8">
-      <div className="max-w-4xl mx-auto px-6 text-center">
-        <motion.div initial={{ scale: 0.98, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.5 }}>
-          <h3 className="text-2xl text-white font-bold">Ready to roll?</h3>
-          <p className="mt-3 text-gray-300">Book a test drive or list your car in minutes.</p>
-          <div className="mt-6 flex flex-col sm:flex-row gap-3 items-center justify-center">
-            <button className="px-6 py-3 rounded-full bg-red-600 text-white font-semibold shadow">Book Test Drive</button>
-            <button className="px-6 py-3 rounded-full border border-white/8 text-gray-200">List Your Car</button>
+      {/* Featured Cars */}
+      <section className="py-16 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center mb-12">
+            <div>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Featured Cars</h2>
+              <p className="text-gray-600">Handpicked cars just for you</p>
+            </div>
+            <Link to="/listings">
+              <Button variant="outline" className="group">
+                View All
+                <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </Link>
           </div>
-        </motion.div>
-      </div>
-    </section>
-  );
-}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {featuredCars.map((car) => (
+              <CarCard key={car.id} car={car} />
+            ))}
+          </div>
+        </div>
+      </section>
 
-export default function Home() {
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-black to-gray-900 text-white">
-      <main className="pt-6">
-        <Hero />
-        <FeaturedSection />
-        <AboutSection />
-        <CTASection />
-      </main>
+      {/* Why Choose Us */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Why Choose CarHub?</h2>
+            <p className="text-gray-600">We make car buying simple and trustworthy</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="text-center group">
+              <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-200 transition-colors">
+                <Shield className="h-8 w-8 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Certified Quality</h3>
+              <p className="text-gray-600">Every car undergoes 200+ quality checks</p>
+            </div>
+            <div className="text-center group">
+              <div className="bg-orange-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-orange-200 transition-colors">
+                <Award className="h-8 w-8 text-orange-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Warranty Included</h3>
+              <p className="text-gray-600">Up to 2 years comprehensive warranty</p>
+            </div>
+            <div className="text-center group">
+              <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-green-200 transition-colors">
+                <TrendingUp className="h-8 w-8 text-green-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Best Price</h3>
+              <p className="text-gray-600">Competitive prices with financing options</p>
+            </div>
+            <div className="text-center group">
+              <div className="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-purple-200 transition-colors">
+                <HeadphonesIcon className="h-8 w-8 text-purple-600" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">24/7 Support</h3>
+              <p className="text-gray-600">Dedicated support team always ready</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-16 bg-gradient-to-br from-blue-50 to-orange-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">What Our Customers Say</h2>
+            <p className="text-gray-600">Real stories from real customers</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {testimonials.map((testimonial, index) => (
+              <Card key={index} className="shadow-lg hover:shadow-xl transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-center mb-4">
+                    <img
+                      src={testimonial.image}
+                      alt={testimonial.name}
+                      className="w-12 h-12 rounded-full mr-4"
+                    />
+                    <div>
+                      <h4 className="font-bold text-gray-900">{testimonial.name}</h4>
+                      <p className="text-sm text-gray-500">{testimonial.location}</p>
+                    </div>
+                  </div>
+                  <div className="flex mb-3">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} className="h-4 w-4 text-yellow-400 fill-current" />
+                    ))}
+                  </div>
+                  <p className="text-gray-600 text-sm">{testimonial.comment}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-16 bg-gradient-to-r from-blue-600 to-orange-500">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+            Ready to Find Your Dream Car?
+          </h2>
+          <p className="text-xl text-white/90 mb-8">
+            Browse thousands of certified cars with warranty and best prices
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link to="/listings">
+              <Button size="lg" variant="secondary" className="w-full sm:w-auto">
+                Browse All Cars
+              </Button>
+            </Link>
+            <Button size="lg" variant="outline" className="bg-white/10 text-white border-white hover:bg-white/20 w-full sm:w-auto">
+              Sell Your Car
+            </Button>
+          </div>
+        </div>
+      </section>
     </div>
   );
-}
+};
+
+export default Home;
