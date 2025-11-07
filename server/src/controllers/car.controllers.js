@@ -205,6 +205,20 @@ const carController = {
       throw new ApiError(500, "Failed to search cars");
     }
   }),
+  getBrandsByFuelType: asyncHandler(async (req, res) => {
+    try {
+      const { fuelType } = req.params;
+      const brands = await Car.distinct("brand", {
+        status: "approved",
+        fuelType,
+      });
+      return res
+        .status(200)
+        .json(new ApiResponse(200, brands, "Car brands fetched successfully"));
+    } catch (error) {
+      throw new ApiError(500, "Failed to fetch car brands");
+    }
+  }), 
 
 };
 

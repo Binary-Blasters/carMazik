@@ -13,8 +13,9 @@ router.route("/models/:brand").get(carController.getCarModelsByBrand); //checked
 router.route("/electric").get(carController.getElectricCars); //checked
 
 router.use(verifyJWT());
-router.route("/search").get(carController.searchCars); 
+router.route("/search").get(carController.searchCars); //checked
 router.route("/:id").get(carController.getCarById); //checked
+router.route("/fuel-type/:fuelType/brands").get(carController.getBrandsByFuelType); //checked
 
 router.use(verifyJWT("seller")); 
 router.use(checkSellerApproval);
