@@ -3,6 +3,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { Car } from "../models/car.models.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import fs from "fs";
+import { get } from "http";
 
 const carController = {
   uploadCar: asyncHandler(async (req, res) => {
@@ -97,7 +98,7 @@ const carController = {
       }
 
       const skip = (page - 1) * limit;
-      console.log(brand, model);
+      
 
       const cars = await Car.find(query)
         .sort(sortOptions)
@@ -124,6 +125,87 @@ const carController = {
       throw new ApiError(500, "Failed to fetch cars");
     }
   }),
+  latestCar: asyncHandler(async (req, res) => {
+    try {
+      const cars = await Car.find({ status: "approved" })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .populate("seller", "name contact");
+      return res.status(200).json(
+        new ApiResponse(200, cars, "Latest cars fetched successfully")
+      );
+    } catch (error) {
+      throw new ApiError(500, "Failed to fetch latest cars");
+    }
+  }),
+  getCarBrands: asyncHandler(async (req, res) => {
+    try {
+      const brands = await Car.distinct("brand", { status: "approved" });
+      return res
+        .status(200)
+        .json(new ApiResponse(200, brands, "Car brands fetched successfully"));
+    } catch (error) {
+      throw new ApiError(500, "Failed to fetch car brands");
+    }
+  }),
+  getCarModelsByBrand: asyncHandler(async (req, res) => {
+    try {
+      const { brand } = req.params;
+      const models = await Car.distinct("model", {
+        status: "approved",
+        brand,
+      });
+      return res
+        .status(200)
+        .json(new ApiResponse(200, models, "Car models fetched successfully"));
+    } catch (error) {
+      throw new ApiError(500, "Failed to fetch car models");
+    }
+  }),
+  getElectricCars: asyncHandler(async (req, res) => {
+    try {
+      const electricCars = await Car.find({ status: "approved", fuelType: "Electric" })
+        .sort({ createdAt: -1 })
+        .populate("seller", "name contact");
+      return res
+        .status(200)
+        .json(
+          new ApiResponse(200, electricCars, "Electric cars fetched successfully")
+        );
+    } catch (error) {
+      throw new ApiError(500, "Failed to fetch electric cars");
+    }
+  }),
+  getCarById: asyncHandler(async (req, res) => {
+    try {
+      const { id } = req.params;
+      const car = await Car.findById(id).populate("seller", "name contact");
+      if (!car) {
+        throw new ApiError(404, "Car not found");
+      }
+      return res.status(200).json(new ApiResponse(200, car, "Car fetched successfully"));
+    } catch (error) {
+      throw new ApiError(500, "Failed to fetch car");
+    }
+  }),
+  searchCars: asyncHandler(async (req, res) => {
+    try {
+      const { query } = req.query;
+      if (!query) {
+        throw new ApiError(400, "Search query is required");
+      }
+      const cars = await Car.find({
+        $or: [
+          { title: { $regex: query, $options: "i" } },
+          { description: { $regex: query, $options: "i" } },
+        ],
+      }).populate("seller", "name contact");
+      return res.status(200).json(new ApiResponse(200, cars, "Cars fetched successfully"));
+    } catch (error) {
+      throw new ApiError(500, "Failed to search cars");
+    }
+  }),
+
 };
 
 export { carController };
