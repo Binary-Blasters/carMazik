@@ -13,6 +13,11 @@ const authslice = createSlice({
       state.user = action.payload;
       state.token = action.payload.token;
     },
+    removeUser(state) {
+      state.user = null;
+      state.token = null;
+    },
+    
   },
 });
 
