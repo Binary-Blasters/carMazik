@@ -202,13 +202,19 @@ const Navbar = () => {
                         navigate("/");
                       }}
                     >
-                      Find New Cars
+                      Explore New Cars
                     </button>
                     <button
                       className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
                       onClick={() => setOpenDropdown(null)}
                     >
-                      Latest Cars
+                      Popular Cars
+                    </button>
+                    <button
+                      className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+                      onClick={() => setOpenDropdown(null)}
+                    >
+                      Electric Cars
                     </button>
                     <button
                       className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
@@ -247,12 +253,6 @@ const Navbar = () => {
                       onClick={() => setOpenDropdown(null)}
                     >
                       Sell Car
-                    </button>
-                    <button
-                      className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
-                      onClick={() => setOpenDropdown(null)}
-                    >
-                      Certified Cars
                     </button>
                   </div>
                 )}
