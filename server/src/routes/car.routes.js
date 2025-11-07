@@ -7,6 +7,14 @@ import { carController } from "../controllers/car.controllers.js";
 const router = express.Router();
 
 router.route("/").get(carController.getCars); //checked
+router.route("/latest").get(carController.latestCar); //checked
+router.route("/brands").get(carController.getCarBrands); //checked
+router.route("/models/:brand").get(carController.getCarModelsByBrand); //checked
+router.route("/electric").get(carController.getElectricCars); //checked
+
+router.use(verifyJWT());
+router.route("/search").get(carController.searchCars); 
+router.route("/:id").get(carController.getCarById); //checked
 
 router.use(verifyJWT("seller")); 
 router.use(checkSellerApproval);
