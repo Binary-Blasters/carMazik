@@ -1,7 +1,7 @@
 // src/components/CarCard.jsx
 import React from "react";
 import { Link } from "react-router-dom";
-import { Heart, Droplet, Settings, MapPin, Calendar, Shield, Lightning } from "lucide-react";
+import { Heart, Droplet, Settings, MapPin, Calendar, Shield, Zap } from "lucide-react";
 import { Card, CardContent } from "./ui/Card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/Badge";
@@ -80,7 +80,7 @@ const CarCard = ({ car = {}, onViewDetails }) => {
         {/* Electric badge */}
         {isElectric && (
           <span className="absolute top-12 left-3 inline-flex items-center gap-1 bg-gradient-to-r from-green-200 to-green-300 text-green-800 text-xs font-semibold px-2 py-1 rounded-full shadow-sm">
-            <Lightning className="h-3 w-3" />
+            <Zap className="h-3 w-3" />
             Electric
           </span>
         )}

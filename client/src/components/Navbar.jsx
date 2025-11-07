@@ -170,8 +170,6 @@ const Navbar = () => {
         )}
       </nav>
 
-<<<<<<< HEAD
-=======
       {/* ---------------------------
           SECONDARY NAVBAR (custom dropdowns)
           Key fixes: overflow-visible, relative, z-50 for popovers
@@ -343,7 +341,6 @@ const Navbar = () => {
         </div>
       </div>
 
->>>>>>> f03bd2d0d452cbc45b496255a72c634c4b2871db
       {showLogin && <Login onClose={() => setShowLogin(false)} />}
     </>
   );
