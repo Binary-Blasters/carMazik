@@ -93,7 +93,7 @@ const CarDetails = () => {
         <Button
           variant="ghost"
           onClick={() => navigate(-1)}
-          className="mb-6"
+          className="mb-6 cursor-pointer hover:text-blue-600"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back

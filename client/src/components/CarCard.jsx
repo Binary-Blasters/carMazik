@@ -75,7 +75,7 @@ const CarCard = ({ car }) => {
             </div>
           </div>
           <Link to={`/car/${car.id}`}>
-            <Button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800">
+            <Button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 cursor-pointer">
               View Details
             </Button>
           </Link>
