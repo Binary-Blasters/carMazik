@@ -43,7 +43,6 @@ const Listings = () => {
   useEffect(() => {
     const brandParam = searchParams.get("brand");
     const budgetParam = searchParams.get("budget");
-    const searchParam = searchParams.get("search");
 
     if (brandParam) {
       setSelectedBrands([brandParam]);
@@ -51,65 +50,159 @@ const Listings = () => {
     if (budgetParam) {
       setSelectedBudget(budgetParam);
     }
+    // note: we intentionally do NOT override user's other selected filters here
   }, [searchParams]);
 
   useEffect(() => {
     let filtered = [...mockCars];
 
-    if (selectedBrands.length > 0) {
-      filtered = filtered.filter((car) => selectedBrands.includes(car.brand));
+    // ----- CATEGORY handling (new) -----
+    const categoryParam = (searchParams.get("category") || "").toLowerCase();
+
+    if (categoryParam) {
+      if (categoryParam === "latest") {
+        // Sort by createdAt/addedAt if available else fallback to year, newest first
+        filtered = filtered.slice().sort((a, b) => {
+          const aDate = new Date(a.createdAt || a.addedAt || 0).getTime() || 0;
+          const bDate = new Date(b.createdAt || b.addedAt || 0).getTime() || 0;
+          if (aDate && bDate) return bDate - aDate;
+          // fallback to year if date not present
+          if (a.year && b.year) return b.year - a.year;
+          return 0;
+        });
+        // keep list (we'll still apply other filters below)
+      } else if (categoryParam === "electric") {
+        filtered = filtered.filter((c) => {
+          const fuel = (c.fuelType || c.fuel || "").toString().toLowerCase();
+          return (
+            fuel.includes("electric") ||
+            c.isElectric === true ||
+            (c.tags && c.tags.includes && c.tags.includes("electric"))
+          );
+        });
+      } else if (categoryParam === "upcoming") {
+        filtered = filtered.filter((c) => {
+          // Accept explicit flag or tag
+          if (c.upcoming === true) return true;
+          if (c.tags && c.tags.includes && c.tags.includes("upcoming")) return true;
+          // Optionally, if you have a releaseDate field in future, filter by that:
+          if (c.releaseDate) {
+            const release = new Date(c.releaseDate);
+            if (!isNaN(release.getTime()) && release.getTime() > Date.now()) return true;
+          }
+          return false;
+        });
+      } else {
+        // Generic category (suv, sedan, hatchback, luxury, etc.)
+        const cat = categoryParam;
+        filtered = filtered.filter(
+          (c) =>
+            (c.category && c.category.toLowerCase() === cat) ||
+            (c.bodyType && c.bodyType.toLowerCase() === cat) ||
+            (c.tags && c.tags.includes && c.tags.includes(cat))
+        );
+      }
     }
 
+    // ----- Brand filter -----
+    if (selectedBrands.length > 0) {
+      filtered = filtered.filter((car) => {
+        // brand fields might be 'brand', 'make', or 'manufacturer'
+        const brandVal = (car.brand || car.make || car.manufacturer || "").toString();
+        return selectedBrands.includes(brandVal);
+      });
+    }
+
+    // ----- Fuel Type filter -----
     if (selectedFuelTypes.length > 0) {
       filtered = filtered.filter((car) =>
-        selectedFuelTypes.includes(car.fuelType)
+        selectedFuelTypes.includes(car.fuelType || car.fuel)
       );
     }
 
+    // ----- Transmission filter -----
     if (selectedTransmissions.length > 0) {
       filtered = filtered.filter((car) =>
         selectedTransmissions.includes(car.transmission)
       );
     }
 
+    // ----- Budget filter -----
     if (selectedBudget !== "All") {
       const budgetRange = budgetRanges.find(
         (range) => range.label === selectedBudget
       );
       if (budgetRange) {
-        filtered = filtered.filter(
-          (car) => car.price >= budgetRange.min && car.price <= budgetRange.max
-        );
+        filtered = filtered.filter((car) => {
+          // assume car.price is numeric; if string like '₹1,00,000' adapt accordingly
+          const priceNum = typeof car.price === "number"
+            ? car.price
+            : Number(String(car.price || "").replace(/[^\d]/g, "")) || 0;
+          return priceNum >= budgetRange.min && priceNum <= budgetRange.max;
+        });
+      } else if (selectedBudget.includes("-")) {
+        // support numeric-range like "500000-1000000"
+        const [minStr, maxStr] = selectedBudget.split("-");
+        const min = Number(minStr) || 0;
+        const max = Number(maxStr) || Infinity;
+        filtered = filtered.filter((car) => {
+          const priceNum = typeof car.price === "number"
+            ? car.price
+            : Number(String(car.price || "").replace(/[^\d]/g, "")) || 0;
+          return priceNum >= min && priceNum <= max;
+        });
       }
     }
 
+    // ----- Certified only filter -----
     if (certifiedOnly) {
       filtered = filtered.filter((car) => car.certified);
     }
 
+    // ----- Search textbox param -----
     const searchQuery = searchParams.get("search");
     if (searchQuery) {
       filtered = filtered.filter(
         (car) =>
-          car.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          car.brand.toLowerCase().includes(searchQuery.toLowerCase())
+          (car.name || car.title || car.model || "")
+            .toString()
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          (car.brand || "")
+            .toString()
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          (car.location || "")
+            .toString()
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase())
       );
     }
 
+    // ----- Sorting -----
     switch (sortBy) {
       case "price-low":
-        filtered.sort((a, b) => a.price - b.price);
+        filtered.sort((a, b) => {
+          const pa = typeof a.price === "number" ? a.price : Number(String(a.price || "").replace(/[^\d]/g, "")) || 0;
+          const pb = typeof b.price === "number" ? b.price : Number(String(b.price || "").replace(/[^\d]/g, "")) || 0;
+          return pa - pb;
+        });
         break;
       case "price-high":
-        filtered.sort((a, b) => b.price - a.price);
+        filtered.sort((a, b) => {
+          const pa = typeof a.price === "number" ? a.price : Number(String(a.price || "").replace(/[^\d]/g, "")) || 0;
+          const pb = typeof b.price === "number" ? b.price : Number(String(b.price || "").replace(/[^\d]/g, "")) || 0;
+          return pb - pa;
+        });
         break;
       case "year-new":
-        filtered.sort((a, b) => b.year - a.year);
+        filtered.sort((a, b) => (b.year || 0) - (a.year || 0));
         break;
       case "mileage-low":
-        filtered.sort((a, b) => a.mileage - b.mileage);
+        filtered.sort((a, b) => (a.mileage || 0) - (b.mileage || 0));
         break;
       default:
+        // relevance or default ordering already handled (e.g., for 'latest' we pre-sorted)
         break;
     }
 
