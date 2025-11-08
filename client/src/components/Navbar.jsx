@@ -21,8 +21,49 @@ const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showLogin, setShowLogin] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null); // 'new' | 'used' | 'news' | 'categories' | null
+  const [dropdownPos, setDropdownPos] = useState({ left: 0, top: 0 });
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+
   const navigate = useNavigate();
   const containerRef = useRef(null);
+  const userMenuRef = useRef(null);
+
+  const { token, user } = useSelector((state) => state.auth);
+  const isLoggedIn = Boolean(token);
+
+  const dispach = useDispatch()
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const role = user?.role || "user";
+
+  const newRef = useRef(null);
+  const usedRef = useRef(null);
+  const newsRef = useRef(null);
+  const categoriesRef = useRef(null);
+
+  const closeTimeout = useRef(null);
+
+  const getDashboardPath = () => {
+    console.log(role);
+    
+    switch (role) {
+      case "admin":
+        return "/admin/dashboard";
+      case "seller":
+        return "/seller/dashboard";
+      default:
+        return "/dashboard";
+    }
+  };
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -31,26 +72,26 @@ const Navbar = () => {
     }
   };
 
-
-  const handleLogout = () => {
-    dispatch(logout());
-    setOpenDropdown(null);
-    navigate("/");
-  };
-
-
   useEffect(() => {
     const onDocClick = (e) => {
       if (!containerRef.current) return;
-      if (!containerRef.current.contains(e.target)) setOpenDropdown(null);
+      if (!containerRef.current.contains(e.target)) {
+        setOpenDropdown(null);
+      }
     };
     document.addEventListener("mousedown", onDocClick);
     return () => document.removeEventListener("mousedown", onDocClick);
   }, []);
 
-  
+  const toggle = (key) => {
+    setOpenDropdown((prev) => (prev === key ? null : key));
+  };
+
+  // close dropdown on esc
   useEffect(() => {
-    const onKey = (e) => e.key === "Escape" && setOpenDropdown(null);
+    const onKey = (e) => {
+      if (e.key === "Escape") setOpenDropdown(null);
+    };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, []);
@@ -93,30 +134,11 @@ const Navbar = () => {
     }
   };
 
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 768) {
-        setMobileMenuOpen(false); 
-      } else {
-        setOpenDropdown(null); 
-      }
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-
-  const toggle = (key) => setOpenDropdown((prev) => (prev === key ? null : key));
-
   return (
-    <div ref={containerRef}>
-     
+    <>
       <nav className="bg-white shadow-md sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* TOP ROW */}
           <div className="flex justify-between items-center h-16">
-            {/* LOGO */}
             <Link to="/" className="flex items-center space-x-2">
               <div className="bg-gradient-to-r from-blue-600 to-orange-500 p-2 rounded-lg">
                 <Car className="h-6 w-6 text-white" />
@@ -126,7 +148,6 @@ const Navbar = () => {
               </span>
             </Link>
 
-            {/* SEARCH BAR */}
             <form
               onSubmit={handleSearch}
               className="hidden md:flex items-center flex-1 max-w-md mx-8"
@@ -142,43 +163,80 @@ const Navbar = () => {
                 <button
                   type="submit"
                   className="absolute right-3 top-1/2 -translate-y-1/2"
+                  aria-label="search"
                 >
                   <Search className="h-5 w-5 text-gray-400" />
                 </button>
               </div>
             </form>
 
-            {/* DESKTOP LINKS */}
             <div className="hidden md:flex items-center space-x-6">
               <Link
-                to="/listings"
-                className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
-              >
-                Buy Car
-              </Link>
-              <Link
                 to="/"
-                className="text-gray-700 hover:text-blue-600 font-medium"
+                className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
               >
                 Sell Car
               </Link>
-              <button className="text-gray-700 hover:text-blue-600 transition-colors cursor-pointer" aria-label="favorites">
+              <button
+                className="text-gray-700 hover:text-blue-600 transition-colors cursor-pointer"
+                aria-label="favorites"
+              >
                 <Heart className="h-6 w-6" />
               </button>
-              <Button
-                variant="outline"
-                className="flex items-center space-x-2 cursor-pointer hover:text-blue-600 transition-colors"
-                onClick={() => setShowLogin(true)}
-              >
-                <User className="h-4 w-4" />
-                <span>Login</span>
-              </Button>
+              {isLoggedIn ? (
+                <div className="relative" ref={userMenuRef}>
+                  <button
+                    onClick={() => setUserMenuOpen((prev) => !prev)}
+                    className="flex items-center space-x-2 cursor-pointer"
+                  >
+                    <User className="h-7 w-7 text-gray-700 hover:text-blue-600 transition-transform hover:scale-110" />
+                  </button>
+
+                  {userMenuOpen && (
+                    <div
+                      className="absolute right-0 mt-3 w-44 bg-white rounded-lg shadow-lg border z-50 overflow-hidden animate-fadeIn"
+                      onMouseLeave={() => setUserMenuOpen(false)}
+                    >
+                      <p className="px-4 py-2 text-sm text-gray-500 border-b">
+                        Hi, {user?.name || "User"} 👋
+                      </p>
+                      <button
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          navigate(getDashboardPath());
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        📊 Dashboard
+                      </button>
+                      <button
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          dispach(logout());
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                      >
+                        <LogOut className="h-4 w-4" /> Logout
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Button
+                  variant="outline"
+                  className="flex items-center space-x-2 cursor-pointer hover:text-blue-600 transition-colors"
+                  onClick={() => setShowLogin(true)}
+                >
+                  <User className="h-4 w-4" />
+                  <span>Login</span>
+                </Button>
+              )}
             </div>
 
-            {/* MOBILE MENU ICON */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="md:hidden text-gray-700"
+              aria-label="menu"
             >
               {mobileMenuOpen ? (
                 <X className="h-6 w-6" />
@@ -188,7 +246,7 @@ const Navbar = () => {
             </button>
           </div>
 
-          {/* MOBILE SEARCH */}
+          {/* mobile search */}
           <form onSubmit={handleSearch} className="md:hidden pb-4">
             <div className="relative">
               <Input
@@ -201,6 +259,7 @@ const Navbar = () => {
               <button
                 type="submit"
                 className="absolute right-3 top-1/2 -translate-y-1/2"
+                aria-label="search"
               >
                 <Search className="h-5 w-5 text-gray-400" />
               </button>
@@ -208,71 +267,66 @@ const Navbar = () => {
           </form>
         </div>
 
-        {/* ✅ MOBILE MENU (with animation) */}
-        <div
-          className={`md:hidden bg-white border-t transition-all duration-300 overflow-hidden ${
-            mobileMenuOpen
-              ? "max-h-[400px] opacity-100"
-              : "max-h-0 opacity-0 pointer-events-none"
-          }`}
-        >
-          <div className="px-4 py-4 space-y-3">
-            <Link
-              to="/listings"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block text-gray-700 hover:text-blue-600 py-2"
-            >
-              Buy Car
-            </Link>
-            <Link
-              to="/"
-              onClick={() => setMobileMenuOpen(false)}
-              className="block text-gray-700 hover:text-blue-600 py-2"
-            >
-              Sell Car
-            </Link>
-
-            {isLoggedIn ? (
-              <>
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    setTimeout(() => navigate(getDashboardPath()), 150);
-                  }}
-                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
-                >
-                  📊 Dashboard
-                </button>
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    setTimeout(() => handleLogout(), 150);
-                  }}
-                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md flex items-center gap-2"
-                >
-                  <LogOut className="h-4 w-4" /> Logout
-                </button>
-              </>
-            ) : (
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => {
-                  setShowLogin(true);
-                  setMobileMenuOpen(false);
-                }}
+        {/* mobile menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-white border-t">
+            <div className="px-4 py-4 space-y-3">
+              <Link
+                to="/listings"
+                className="block text-gray-700 hover:text-blue-600 font-medium py-2"
+                onClick={() => setMobileMenuOpen(false)}
               >
-                <User className="h-4 w-4 mr-2" />
-                Login
-              </Button>
-            )}
+                Buy Car
+              </Link>
+              <Link
+                to="/"
+                className="block text-gray-700 hover:text-blue-600 font-medium py-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Sell Car
+              </Link>
+              {isLoggedIn ? (
+                <>
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      setTimeout(() => navigate(getDashboardPath()), 150);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
+                  >
+                    📊 Dashboard
+                  </button>
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      setTimeout(() => handleLogout(), 150);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md flex items-center gap-2"
+                  >
+                    <LogOut className="h-4 w-4" /> Logout
+                  </button>
+                </>
+              ) : (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    setShowLogin(true);
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  <User className="h-4 w-4 mr-2" />
+                  Login
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </nav>
 
       {/* ---------------------------
           SECONDARY NAVBAR (custom dropdowns)
-          Key fixes: overflow-visible, relative, z-50 for popovers
+          Hover opens, auto-sized fixed popovers, compact items
          --------------------------- */}
       <div
         ref={containerRef}
@@ -281,22 +335,36 @@ const Navbar = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-6 h-12">
             <nav className="flex items-center gap-6">
-
               {/* NEW CARS */}
-              <div className="relative">
+              <div
+                className="relative"
+                onMouseLeave={() => scheduleClose()}
+                onMouseEnter={() => cancelScheduledClose()}
+              >
                 <button
+                  ref={newRef}
+                  onMouseEnter={() => openAt("new", newRef)}
                   onClick={() => toggle("new")}
                   aria-haspopup="menu"
                   aria-expanded={openDropdown === "new"}
-                  className="py-3 text-sm font-medium text-gray-700 hover:text-orange-500 flex items-center gap-1 bg-transparent border-0 outline-none"
+                  className="py-3 text-sm font-medium text-gray-700 hover:text-blue-600 flex items-center gap-1 bg-transparent border-0 outline-none cursor-pointer"
                 >
                   NEW CARS <ChevronDown className="w-4 h-4" />
                 </button>
 
                 {openDropdown === "new" && (
-                  <div className="absolute left-0 mt-2 w-44 bg-white rounded-md shadow-md border z-50">
+                  <div
+                    style={{
+                      left: dropdownPos.left,
+                      top: dropdownPos.top,
+                      maxWidth: 150,
+                    }}
+                    className="fixed bg-white rounded-md shadow-md border z-50 px-0 py-1 overflow-hidden w-auto"
+                    onMouseEnter={() => cancelScheduledClose()}
+                    onMouseLeave={() => scheduleClose()}
+                  >
                     <button
-                      className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 hover:text-blue-600 cursor-pointer"
                       onClick={() => {
                         setOpenDropdown(null);
                         navigate("/");
@@ -305,13 +373,13 @@ const Navbar = () => {
                       Find New Cars
                     </button>
                     <button
-                      className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 hover:text-blue-600 cursor-pointer"
                       onClick={() => setOpenDropdown(null)}
                     >
                       Latest Cars
                     </button>
                     <button
-                      className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 hover:text-blue-600 cursor-pointer"
                       onClick={() => setOpenDropdown(null)}
                     >
                       Upcoming Cars
@@ -321,20 +389,35 @@ const Navbar = () => {
               </div>
 
               {/* USED CARS */}
-              <div className="relative">
+              <div
+                className="relative"
+                onMouseLeave={() => scheduleClose()}
+                onMouseEnter={() => cancelScheduledClose()}
+              >
                 <button
+                  ref={usedRef}
+                  onMouseEnter={() => openAt("used", usedRef)}
                   onClick={() => toggle("used")}
                   aria-haspopup="menu"
                   aria-expanded={openDropdown === "used"}
-                  className="py-3 text-sm font-medium text-gray-700 hover:text-orange-500 flex items-center gap-1 bg-transparent border-0 outline-none"
+                  className="py-3 text-sm font-medium text-gray-700 hover:text-blue-600 flex items-center gap-1 bg-transparent border-0 outline-none cursor-pointer"
                 >
                   USED CARS <ChevronDown className="w-4 h-4" />
                 </button>
 
                 {openDropdown === "used" && (
-                  <div className="absolute left-0 mt-2 w-44 bg-white rounded-md shadow-md border z-50">
+                  <div
+                    style={{
+                      left: dropdownPos.left,
+                      top: dropdownPos.top,
+                      maxWidth: 150,
+                    }}
+                    className="fixed bg-white rounded-md shadow-md border z-50 px-0 py-1 overflow-hidden w-auto"
+                    onMouseEnter={() => cancelScheduledClose()}
+                    onMouseLeave={() => scheduleClose()}
+                  >
                     <button
-                      className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 hover:text-blue-600 cursor-pointer"
                       onClick={() => {
                         setOpenDropdown(null);
                         navigate("/used-cars");
@@ -343,13 +426,13 @@ const Navbar = () => {
                       Buy Used Cars
                     </button>
                     <button
-                      className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 hover:text-blue-600 cursor-pointer"
                       onClick={() => setOpenDropdown(null)}
                     >
                       Sell Car
                     </button>
                     <button
-                      className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 hover:text-blue-600 cursor-pointer"
                       onClick={() => setOpenDropdown(null)}
                     >
                       Certified Cars
@@ -359,32 +442,47 @@ const Navbar = () => {
               </div>
 
               {/* NEWS & REVIEWS */}
-              <div className="relative">
+              <div
+                className="relative"
+                onMouseLeave={() => scheduleClose()}
+                onMouseEnter={() => cancelScheduledClose()}
+              >
                 <button
+                  ref={newsRef}
+                  onMouseEnter={() => openAt("news", newsRef)}
                   onClick={() => toggle("news")}
                   aria-haspopup="menu"
                   aria-expanded={openDropdown === "news"}
-                  className="py-3 text-sm font-medium text-gray-700 hover:text-orange-500 flex items-center gap-1 bg-transparent border-0 outline-none"
+                  className="py-3 text-sm font-medium text-gray-700 hover:text-blue-600 flex items-center gap-1 bg-transparent border-0 outline-none cursor-pointer"
                 >
                   NEWS & REVIEWS <ChevronDown className="w-4 h-4" />
                 </button>
 
                 {openDropdown === "news" && (
-                  <div className="absolute left-0 mt-2 w-44 bg-white rounded-md shadow-md border z-50">
+                  <div
+                    style={{
+                      left: dropdownPos.left,
+                      top: dropdownPos.top,
+                      maxWidth: 150,
+                    }}
+                    className="fixed bg-white rounded-md shadow-md border z-50 px-0 py-1 overflow-hidden w-auto"
+                    onMouseEnter={() => cancelScheduledClose()}
+                    onMouseLeave={() => scheduleClose()}
+                  >
                     <button
-                      className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 hover:text-blue-600 cursor-pointer"
                       onClick={() => setOpenDropdown(null)}
                     >
                       Car News
                     </button>
                     <button
-                      className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 hover:text-blue-600 cursor-pointer"
                       onClick={() => setOpenDropdown(null)}
                     >
                       Expert Reviews
                     </button>
                     <button
-                      className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 hover:text-blue-600 cursor-pointer"
                       onClick={() => setOpenDropdown(null)}
                     >
                       User Reviews
@@ -394,32 +492,47 @@ const Navbar = () => {
               </div>
 
               {/* CATEGORIES */}
-              <div className="relative">
+              <div
+                className="relative"
+                onMouseLeave={() => scheduleClose()}
+                onMouseEnter={() => cancelScheduledClose()}
+              >
                 <button
+                  ref={categoriesRef}
+                  onMouseEnter={() => openAt("categories", categoriesRef)}
                   onClick={() => toggle("categories")}
                   aria-haspopup="menu"
                   aria-expanded={openDropdown === "categories"}
-                  className="py-3 text-sm font-medium text-gray-700 hover:text-orange-500 flex items-center gap-1 bg-transparent border-0 outline-none"
+                  className="py-3 text-sm font-medium text-gray-700 hover:text-blue-600 flex items-center gap-1 bg-transparent border-0 outline-none cursor-pointer"
                 >
                   CATEGORIES <ChevronDown className="w-4 h-4" />
                 </button>
 
                 {openDropdown === "categories" && (
-                  <div className="absolute left-0 mt-2 w-44 bg-white rounded-md shadow-md border z-50">
+                  <div
+                    style={{
+                      left: dropdownPos.left,
+                      top: dropdownPos.top,
+                      maxWidth: 150,
+                    }}
+                    className="fixed bg-white rounded-md shadow-md border z-50 px-0 py-1 overflow-hidden w-auto"
+                    onMouseEnter={() => cancelScheduledClose()}
+                    onMouseLeave={() => scheduleClose()}
+                  >
                     <button
-                      className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 hover:text-blue-600 cursor-pointer"
                       onClick={() => setOpenDropdown(null)}
                     >
                       New Cars
                     </button>
                     <button
-                      className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 hover:text-blue-600 cursor-pointer"
                       onClick={() => setOpenDropdown(null)}
                     >
                       Used Cars
                     </button>
                     <button
-                      className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 hover:text-blue-600 cursor-pointer"
                       onClick={() => setOpenDropdown(null)}
                     >
                       Electric Cars
@@ -429,14 +542,11 @@ const Navbar = () => {
               </div>
             </nav>
 
-            <div className="ml-auto flex items-center gap-4">
+            {/*  <div className="ml-auto flex items-center gap-4">
               <Link to="/compare" className="text-sm text-gray-600 hover:text-orange-500">
                 Compare
               </Link>
-              <Link
-                to="/loan"
-                className="text-sm text-gray-600 hover:text-orange-500"
-              >
+              <Link to="/loan" className="text-sm text-gray-600 hover:text-orange-500">
                 Loan
               </Link>
             </div> */}
@@ -445,7 +555,7 @@ const Navbar = () => {
       </div>
 
       {showLogin && <Login onClose={() => setShowLogin(false)} />}
-    </div>
+    </>
   );
 };
 
