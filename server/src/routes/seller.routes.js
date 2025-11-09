@@ -18,6 +18,13 @@ router
     checkSellerApproval,
     sellerController.updateSellerProfile
   );
+  
+
+  router.route("/approved/cars").get(                  //checked
+    verifyJWT("seller"),
+    checkSellerApproval,
+    sellerController.getApprovedCars
+  );
 
 
 

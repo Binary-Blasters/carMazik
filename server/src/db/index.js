@@ -2,7 +2,7 @@ import mogoose from "mongoose"
 
 const connectDB = async () => {
     try {
-        await mogoose.connect(`${process.env.MONGODB_CONNECTION_sTRING}/carmazik`)
+        await mogoose.connect(`${process.env.MONGODB_CONNECTION_STRING}/carmazik`)
         console.log(`MongoDB connect to server`);
         
     } catch (error) {

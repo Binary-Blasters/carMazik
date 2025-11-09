@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { lazy, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProfile } from "../../app/slice/profile.slice";
 import {
@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import SellerDashboardLayout from "../../components/dashboard/SellerDashboardLayout";
 import UploadCarForm from "../seller/UploadCarForm";
+const AprrovedCars = lazy(() => import("../../components/dashboard/AprrovedCars"))
 
 const SellerDashboard = () => {
   const dispatch = useDispatch();
@@ -42,7 +43,7 @@ const SellerDashboard = () => {
 
   return (
     <SellerDashboardLayout activeTab={activeTab} setActiveTab={setActiveTab}>
-      {/* 👤 PROFILE TAB */}
+      
       {activeTab === "profile" && (
         <div className="bg-white/90 backdrop-blur-xl shadow-lg border border-gray-100 p-4 sm:p-6 md:p-8 rounded-2xl transition-all duration-300">
           <h2 className="text-2xl sm:text-3xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent flex items-center gap-2 flex-wrap">
@@ -50,9 +51,9 @@ const SellerDashboard = () => {
             <span className="font-semibold">{user?.name}</span>
           </h2>
 
-          {/* 🧩 Info Grid */}
+        
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-700">
-            {/* Personal Info */}
+            
             <div className="p-4 sm:p-5 bg-gradient-to-r from-blue-50 to-white rounded-xl border border-blue-100">
               <h3 className="text-lg font-semibold text-blue-700 flex items-center gap-2 mb-2">
                 <User className="h-5 w-5 text-blue-600" /> Personal Info
@@ -62,7 +63,7 @@ const SellerDashboard = () => {
               <p><strong>Phone:</strong> {user?.phonenumber}</p>
             </div>
 
-            {/* Business Info */}
+            
             <div className="p-4 sm:p-5 bg-gradient-to-r from-orange-50 to-white rounded-xl border border-orange-100">
               <h3 className="text-lg font-semibold text-orange-700 flex items-center gap-2 mb-2">
                 <Building2 className="h-5 w-5 text-orange-600" /> Business Info
@@ -72,7 +73,7 @@ const SellerDashboard = () => {
               <p><strong>Address:</strong> {seller.address}</p>
             </div>
 
-            {/* Documents */}
+         
             <div className="p-4 sm:p-5 bg-gradient-to-r from-blue-50 to-white rounded-xl border border-blue-100">
               <h3 className="text-lg font-semibold text-blue-700 flex items-center gap-2 mb-2">
                 <FileText className="h-5 w-5 text-blue-600" /> Documents
@@ -81,7 +82,7 @@ const SellerDashboard = () => {
               <p><strong>Aadhaar:</strong> {seller.aadhaarNumber}</p>
             </div>
 
-            {/* Bank Details */}
+          
             <div className="p-4 sm:p-5 bg-gradient-to-r from-orange-50 to-white rounded-xl border border-orange-100">
               <h3 className="text-lg font-semibold text-orange-700 flex items-center gap-2 mb-2">
                 <CreditCard className="h-5 w-5 text-orange-600" /> Bank Details
@@ -90,7 +91,7 @@ const SellerDashboard = () => {
               <p><strong>IFSC:</strong> {seller.bankDetails?.ifscCode || "N/A"}</p>
             </div>
 
-            {/* Subscription */}
+           
             <div className="sm:col-span-2 p-4 sm:p-5 bg-gradient-to-r from-blue-50 to-white rounded-xl border border-blue-100">
               <h3 className="text-lg font-semibold text-blue-700 flex items-center gap-2 mb-2">
                 <Briefcase className="h-5 w-5 text-blue-600" /> Subscription
@@ -108,8 +109,8 @@ const SellerDashboard = () => {
         </div>
       )}
 
-      {/* 📁 EMPTY STATES */}
-      {activeTab !== "profile" && activeTab !== "upload" && (
+      
+      {activeTab !== "profile" && activeTab !== "upload" && activeTab !== "approved" &&(
         <DashboardEmpty
           icon={
             activeTab === "approved" ? (
@@ -127,7 +128,7 @@ const SellerDashboard = () => {
         />
       )}
 
-      {/* 🚘 UPLOAD TAB */}
+ 
       {activeTab === "upload" && (
         <div className="bg-white shadow-lg rounded-2xl p-4 sm:p-6 border border-gray-200">
           <div className="flex items-center gap-3 mb-6 flex-wrap">
@@ -139,11 +140,14 @@ const SellerDashboard = () => {
           <UploadCarForm />
         </div>
       )}
+      {activeTab === "approved" && (
+        <AprrovedCars/>
+      )}
     </SellerDashboardLayout>
   );
 };
 
-// 🔹 Empty State
+
 const DashboardEmpty = ({ icon, title, message }) => (
   <div className="bg-white shadow-md border border-gray-100 p-6 sm:p-10 rounded-2xl text-center hover:shadow-lg transition-all duration-300">
     <div className="flex justify-center mb-4">{icon}</div>

@@ -4,22 +4,31 @@ import { Car } from "../models/car.models.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import fs from "fs";
 import { get } from "http";
+import { Seller } from "../models/seller.model.js";
+import path from "path";
 
 const carController = {
   uploadCar: asyncHandler(async (req, res) => {
     const carData = req.body;
     const carImages = req?.files;
-    const seller_id = req.user.id;
+    const seller_id = req.user?.id;
+
+    const seller = await Seller.findOne({ userid: seller_id });
+
+    if (!seller) {
+      throw new ApiError(401, "Unauthorized: Seller not found");
+    }
 
     if (!carData || !carImages || carImages.length === 0) {
       throw new ApiError(400, "Car data and images are required");
     }
 
-    const imagePaths = carImages.map((file) => file.path);
+    const imagePaths = req.files.map(file => `/images/cars/${file.filename}`);
+
 
     const newCar = new Car({
       ...carData,
-      seller: seller_id,
+      seller: seller._id,
       images: imagePaths,
     });
 
@@ -29,11 +38,17 @@ const carController = {
         .status(201)
         .json(new ApiResponse(201, "Car uploaded successfully", newCar));
     } catch (error) {
-      // Delete uploaded images if save fails
-      imagePaths.forEach((path) => {
-        if (fs.existsSync(path)) {
-          fs.unlinkSync(path); // delete the file
-        }
+      console.log(error);
+
+      carImages.forEach((file) => {
+        const filePath = path.join(
+          process.cwd(),
+          "public",
+          "images",
+          "cars",
+          file.filename
+        );
+        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
       });
       throw new ApiError(500, "Failed to create car");
     }
@@ -98,7 +113,6 @@ const carController = {
       }
 
       const skip = (page - 1) * limit;
-      
 
       const cars = await Car.find(query)
         .sort(sortOptions)
@@ -131,9 +145,9 @@ const carController = {
         .sort({ createdAt: -1 })
         .limit(5)
         .populate("seller", "name contact");
-      return res.status(200).json(
-        new ApiResponse(200, cars, "Latest cars fetched successfully")
-      );
+      return res
+        .status(200)
+        .json(new ApiResponse(200, cars, "Latest cars fetched successfully"));
     } catch (error) {
       throw new ApiError(500, "Failed to fetch latest cars");
     }
@@ -164,13 +178,20 @@ const carController = {
   }),
   getElectricCars: asyncHandler(async (req, res) => {
     try {
-      const electricCars = await Car.find({ status: "approved", fuelType: "Electric" })
+      const electricCars = await Car.find({
+        status: "approved",
+        fuelType: "Electric",
+      })
         .sort({ createdAt: -1 })
         .populate("seller", "name contact");
       return res
         .status(200)
         .json(
-          new ApiResponse(200, electricCars, "Electric cars fetched successfully")
+          new ApiResponse(
+            200,
+            electricCars,
+            "Electric cars fetched successfully"
+          )
         );
     } catch (error) {
       throw new ApiError(500, "Failed to fetch electric cars");
@@ -183,7 +204,9 @@ const carController = {
       if (!car) {
         throw new ApiError(404, "Car not found");
       }
-      return res.status(200).json(new ApiResponse(200, car, "Car fetched successfully"));
+      return res
+        .status(200)
+        .json(new ApiResponse(200, car, "Car fetched successfully"));
     } catch (error) {
       throw new ApiError(500, "Failed to fetch car");
     }
@@ -200,7 +223,9 @@ const carController = {
           { description: { $regex: query, $options: "i" } },
         ],
       }).populate("seller", "name contact");
-      return res.status(200).json(new ApiResponse(200, cars, "Cars fetched successfully"));
+      return res
+        .status(200)
+        .json(new ApiResponse(200, cars, "Cars fetched successfully"));
     } catch (error) {
       throw new ApiError(500, "Failed to search cars");
     }
@@ -218,8 +243,7 @@ const carController = {
     } catch (error) {
       throw new ApiError(500, "Failed to fetch car brands");
     }
-  }), 
-
+  }),
 };
 
 export { carController };

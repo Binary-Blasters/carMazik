@@ -12,7 +12,7 @@ import {
 import { Button } from "../components/ui/button";
 import CarCard from "../components/CarCard";
 import { mockCars, brands, budgetRanges } from "../mockData";
-import HeroSection from "../components/HeroSection"; // ✅ Modern hero section (form + slider)
+import HeroSection from "../components/HeroSection"; 
 
 const Home = () => {
   const navigate = useNavigate();

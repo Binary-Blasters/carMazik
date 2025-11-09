@@ -9,14 +9,14 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 const storage = multer.diskStorage({
-    destination: function(req, file, cb){
-        cb(null, uploadDir)
-    },
-    filename: function(req, file, cb){
-        cb(null, Date.now() + '-' + file.originalname)
-    }
+  destination: (req, file, cb) => cb(null, uploadDir),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname);
+    const base = path.basename(file.originalname, ext);
+    cb(null, `${Date.now()}-${base}${ext}`); 
+  },
+});
 
-})
 
 const upload = multer({ storage: storage });
 

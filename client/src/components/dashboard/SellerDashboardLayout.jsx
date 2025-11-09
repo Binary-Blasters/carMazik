@@ -43,7 +43,7 @@ const SellerDashboardLayout = ({ activeTab, setActiveTab, children }) => {
         </nav>
       </aside>
 
-      {/* 🔹 SIDEBAR (for desktop) */}
+      
       <aside className="hidden md:flex md:flex-col w-64 bg-white shadow-xl border-r border-gray-100 p-6">
         <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent mb-8 text-center">
           Seller Panel

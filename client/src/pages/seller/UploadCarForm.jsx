@@ -10,14 +10,17 @@ import {
   Image as ImageIcon,
   Trash2,
 } from "lucide-react";
-import axios from "axios";
+import { createCar } from "../../api/car";
+import CarmazikAlert from "../../components/ui/CarmazikAlert";
 
 const UploadCarForm = () => {
   const [step, setStep] = useState(1);
-  const [progress, setProgress] = useState(0);
+  const [progress, setProgress] = useState(25);
   const [uploading, setUploading] = useState(false);
   const [previewImages, setPreviewImages] = useState([]);
+  const [alert, setAlert] = useState(null);
 
+  // ✅ Match exactly with Car schema
   const [formData, setFormData] = useState({
     title: "",
     brand: "",
@@ -29,18 +32,22 @@ const UploadCarForm = () => {
     kmDriven: "",
     ownership: "",
     color: "",
+    images: [],
     description: "",
     engine: { capacity: "", power: "", torque: "" },
     mileage: "",
     seatingCapacity: "",
-    images: [],
+    location: "",
   });
 
+  // ---------------------
   // Handlers
+  // ---------------------
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
   const handleEngineChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -53,7 +60,11 @@ const UploadCarForm = () => {
     const files = Array.from(e.target.files);
     const valid = files.filter((file) => file.type.startsWith("image/"));
     if (valid.length + previewImages.length > 30) {
-      alert("⚠️ You can upload up to 30 images only.");
+      setAlert({
+        type: "warning",
+        title: "Too many images!",
+        message: "⚠️ You can upload up to 30 images only.",
+      });
       return;
     }
     setFormData((prev) => ({ ...prev, images: [...prev.images, ...valid] }));
@@ -74,6 +85,9 @@ const UploadCarForm = () => {
   const nextStep = () => step < 4 && (setStep(step + 1), setProgress((p) => p + 25));
   const prevStep = () => step > 1 && (setStep(step - 1), setProgress((p) => p - 25));
 
+  // ---------------------
+  // Submit
+  // ---------------------
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -81,83 +95,112 @@ const UploadCarForm = () => {
       const data = new FormData();
       for (const key in formData) {
         if (key === "engine") data.append("engine", JSON.stringify(formData.engine));
-        else if (key === "images") formData.images.forEach((f) => data.append("images", f));
+        else if (key === "images")
+          formData.images.forEach((file) => data.append("images", file));
         else data.append(key, formData[key]);
       }
-      await axios.post("/api/v1/cars/create", data, {
-        withCredentials: true,
-        headers: { "Content-Type": "multipart/form-data" },
+
+      await createCar(data);
+
+      setAlert({
+        type: "success",
+        title: "Car Uploaded!",
+        message: "✅ Your car has been submitted for approval.",
       });
-      alert("✅ Car uploaded successfully!");
-      window.location.reload();
+
+      setFormData({
+        title: "",
+        brand: "",
+        model: "",
+        year: "",
+        price: "",
+        fuelType: "",
+        transmission: "",
+        kmDriven: "",
+        ownership: "",
+        color: "",
+        images: [],
+        description: "",
+        engine: { capacity: "", power: "", torque: "" },
+        mileage: "",
+        seatingCapacity: "",
+        location: "",
+      });
+      setPreviewImages([]);
+      setStep(1);
+      setProgress(25);
     } catch (err) {
-      alert(err.response?.data?.message || "❌ Upload failed");
+      setAlert({
+        type: "error",
+        title: "Upload Failed",
+        message: err.response?.data?.message || "❌ Something went wrong.",
+      });
     } finally {
       setUploading(false);
     }
   };
 
+  // ---------------------
+  // UI
+  // ---------------------
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50 py-8 sm:py-12">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50 py-10">
+      <div className="max-w-4xl mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-10">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent mb-3">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">
             Upload Your Car 🚗
           </h1>
-          <p className="text-gray-600 text-sm sm:text-base">
-            Provide details to list your car for sale
+          <p className="text-gray-600 mt-2">
+            Fill in the details to list your car for sale.
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl p-5 sm:p-8 border border-gray-200 hover:shadow-2xl transition-all duration-300">
-          <div className="mb-8">
-            <Progress value={progress} />
-            <p className="text-sm text-gray-500 mt-2 text-center">
-              Step {step} of 4
-            </p>
-          </div>
+        <div className="bg-white shadow-xl rounded-2xl p-8 border border-gray-100">
+          <Progress value={progress} />
+          <p className="text-center text-gray-500 text-sm mt-2">Step {step} of 4</p>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Step 1 */}
+          <form onSubmit={handleSubmit} className="space-y-8 mt-6">
+            {/* Step 1: Basic Info */}
             {step === 1 && (
               <div>
-                <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">
                   🧾 Basic Information
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid sm:grid-cols-2 gap-4">
                   {["title", "brand", "model", "year", "price"].map((field) => (
                     <input
                       key={field}
                       name={field}
-                      type={field === "year" || field === "price" ? "number" : "text"}
+                      type={["year", "price"].includes(field) ? "number" : "text"}
                       placeholder={field.toUpperCase()}
                       value={formData[field]}
                       onChange={handleChange}
-                      className="border p-3 rounded-md focus:ring-2 focus:ring-blue-400 outline-none"
                       required
+                      className="border p-3 rounded-md focus:ring-2 focus:ring-blue-400 outline-none"
                     />
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Step 2 */}
+            {/* Step 2: Technical Info */}
             {step === 2 && (
               <div>
-                <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">
                   ⚙️ Technical Details
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid sm:grid-cols-2 gap-4">
                   <select
                     name="fuelType"
                     value={formData.fuelType}
                     onChange={handleChange}
                     className="border p-3 rounded-md focus:ring-2 focus:ring-blue-400"
+                    required
                   >
                     <option value="">Fuel Type</option>
-                    {["Petrol", "Diesel", "CNG", "Electric", "Hybrid"].map((t) => (
-                      <option key={t}>{t}</option>
+                    {["Petrol", "Diesel", "CNG", "Electric", "Hybrid"].map((f) => (
+                      <option key={f}>{f}</option>
                     ))}
                   </select>
 
@@ -166,6 +209,7 @@ const UploadCarForm = () => {
                     value={formData.transmission}
                     onChange={handleChange}
                     className="border p-3 rounded-md focus:ring-2 focus:ring-blue-400"
+                    required
                   >
                     <option value="">Transmission</option>
                     <option>Manual</option>
@@ -178,6 +222,7 @@ const UploadCarForm = () => {
                     placeholder="KM Driven"
                     value={formData.kmDriven}
                     onChange={handleChange}
+                    required
                     className="border p-3 rounded-md focus:ring-2 focus:ring-blue-400"
                   />
 
@@ -186,12 +231,14 @@ const UploadCarForm = () => {
                     value={formData.ownership}
                     onChange={handleChange}
                     className="border p-3 rounded-md focus:ring-2 focus:ring-blue-400"
+                    required
                   >
                     <option value="">Ownership</option>
-                    <option>1st Owner</option>
-                    <option>2nd Owner</option>
-                    <option>3rd Owner</option>
-                    <option>4th Owner or More</option>
+                    {["1st Owner", "2nd Owner", "3rd Owner", "4th Owner or More"].map(
+                      (o) => (
+                        <option key={o}>{o}</option>
+                      )
+                    )}
                   </select>
 
                   <input
@@ -216,23 +263,30 @@ const UploadCarForm = () => {
                     onChange={handleChange}
                     className="border p-3 rounded-md focus:ring-2 focus:ring-blue-400"
                   />
+                  <input
+                    name="location"
+                    placeholder="Location (City, State)"
+                    value={formData.location}
+                    onChange={handleChange}
+                    className="border p-3 rounded-md focus:ring-2 focus:ring-blue-400"
+                  />
                 </div>
               </div>
             )}
 
-            {/* Step 3 */}
+            {/* Step 3: Engine */}
             {step === 3 && (
               <div>
-                <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">
                   🧩 Engine & Performance
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {["capacity", "power", "torque"].map((field) => (
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {["capacity", "power", "torque"].map((f) => (
                     <input
-                      key={field}
-                      name={field}
-                      placeholder={`Engine ${field}`}
-                      value={formData.engine[field]}
+                      key={f}
+                      name={f}
+                      placeholder={`Engine ${f}`}
+                      value={formData.engine[f]}
                       onChange={handleEngineChange}
                       className="border p-3 rounded-md focus:ring-2 focus:ring-blue-400"
                     />
@@ -241,10 +295,10 @@ const UploadCarForm = () => {
               </div>
             )}
 
-            {/* Step 4 */}
+            {/* Step 4: Images & Description */}
             {step === 4 && (
               <div>
-                <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">
                   📸 Upload Images & Description
                 </h3>
                 <textarea
@@ -279,7 +333,11 @@ const UploadCarForm = () => {
                   <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 mt-6">
                     {previewImages.map((img, idx) => (
                       <div key={idx} className="relative group border rounded-lg overflow-hidden">
-                        <img src={img} alt="preview" className="w-full h-24 sm:h-28 object-cover" />
+                        <img
+                          src={img}
+                          alt="preview"
+                          className="w-full h-24 sm:h-28 object-cover"
+                        />
                         <button
                           type="button"
                           onClick={() => removeImage(idx)}
@@ -294,7 +352,7 @@ const UploadCarForm = () => {
               </div>
             )}
 
-            {/* Buttons */}
+            {/* Navigation Buttons */}
             <div className="flex flex-col sm:flex-row justify-between pt-6 gap-3">
               {step > 1 && (
                 <Button
@@ -321,7 +379,11 @@ const UploadCarForm = () => {
                   disabled={uploading}
                   className="ml-auto bg-gradient-to-r from-green-600 to-green-500 text-white flex items-center justify-center gap-2 hover:opacity-90"
                 >
-                  {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                  {uploading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Check className="h-4 w-4" />
+                  )}
                   {uploading ? "Uploading..." : "Submit"}
                 </Button>
               )}
@@ -329,6 +391,13 @@ const UploadCarForm = () => {
           </form>
         </div>
       </div>
+
+      {alert && (
+        <CarmazikAlert
+          {...alert}
+          onClose={() => setAlert(null)}
+        />
+      )}
     </div>
   );
 };
