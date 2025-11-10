@@ -105,91 +105,114 @@ const carController = {
   }
 }),
 
-  getCars: asyncHandler(async (req, res) => {
-    try {
-      const {
-        brand,
-        model,
-        year,
-        minPrice,
-        maxPrice,
-        fuelType,
-        transmission,
-        minKm,
-        maxKm,
-        color,
-        search,
-        sortBy,
-        sortOrder = "asc",
-        page = 1,
-        limit = 10,
-      } = req.query;
+ 
 
-      const query = { status: "approved" };
 
-      const brandQuery = brand ? brand.trim() : null;
-      const modelQuery = model ? model.trim() : null;
 
-      if (brandQuery) query.brand = { $regex: brandQuery, $options: "i" };
-      if (modelQuery) query.model = { $regex: modelQuery, $options: "i" };
-      if (year) query.year = Number(year);
-      if (fuelType) query.fuelType = fuelType;
-      if (transmission) query.transmission = transmission;
-      if (color) query.color = color;
+ getCars : asyncHandler(async (req, res) => {
+  try {
+    const {
+      brand,
+      model,
+      year,
+      minPrice,
+      maxPrice,
+      fuelType,
+      transmission,
+      minKm,
+      maxKm,
+      color,
+      search,
+      sortBy,
+      sortOrder = "asc",
+      page = 1,
+      limit = 10,
+      category,
+    } = req.query;
 
-      if (minPrice || maxPrice) {
-        query.price = {};
-        if (minPrice) query.price.$gte = Number(minPrice);
-        if (maxPrice) query.price.$lte = Number(maxPrice);
-      }
+   
+    const query = { status: "approved" };
 
-      if (minKm || maxKm) {
-        query.kmDriven = {};
-        if (minKm) query.kmDriven.$gte = Number(minKm);
-        if (maxKm) query.kmDriven.$lte = Number(maxKm);
-      }
+    if (brand?.trim()) query.brand = { $regex: brand.trim(), $options: "i" };
+    if (model?.trim()) query.model = { $regex: model.trim(), $options: "i" };
+    if (year) query.year = Number(year);
+    if (fuelType) query.fuelType = fuelType;
+    if (transmission) query.transmission = transmission;
+    if (color) query.color = color;
 
-      if (search) {
-        query.$or = [
-          { title: { $regex: search, $options: "i" } },
-          { description: { $regex: search, $options: "i" } },
-        ];
-      }
-
-      const sortOptions = {};
-      if (sortBy) {
-        sortOptions[sortBy] = sortOrder === "asc" ? 1 : -1;
-      } else {
-        sortOptions.createdAt = -1;
-      }
-
-      const skip = (page - 1) * limit;
-
-      const cars = await Car.find(query)
-        .sort(sortOptions)
-        .skip(skip)
-        .limit(Number(limit))
-        .populate("seller", "name contact");
-
-      const total = await Car.countDocuments(query);
-      console.log(cars);
-
-      res.status(200).json(
-        new ApiResponse(
-          200,
-          {
-            total,
-            page: Number(page),
-            limit: Number(limit),
-            cars,
-          },
-          "Cars fetched successfully"
-        )
-      );
-    } catch (error) {
-      throw new ApiError(500, "Failed to fetch cars");
+    if (minPrice || maxPrice) {
+      query.price = {};
+      if (minPrice) query.price.$gte = Number(minPrice);
+      if (maxPrice) query.price.$lte = Number(maxPrice);
     }
-  }),
+
+    if (minKm || maxKm) {
+      query.kmDriven = {};
+      if (minKm) query.kmDriven.$gte = Number(minKm);
+      if (maxKm) query.kmDriven.$lte = Number(maxKm);
+    }
+
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } },
+        { brand: { $regex: search, $options: "i" } },
+        { model: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const sortOptions = {};
+
+    if (category === "latest") {
+    
+      sortOptions.createdAt = -1;
+    } else if (category === "popular") {
+      
+      sortOptions.views = -1;
+    } else if (category === "featured") {
+     
+      query.featured = true;
+      sortOptions.createdAt = -1;
+    } else if (sortBy) {
+     
+      sortOptions[sortBy] = sortOrder === "asc" ? 1 : -1;
+    } else {
+    
+      sortOptions.createdAt = -1;
+    }
+
+    const skip = (page - 1) * limit;
+
+
+    const cars = await Car.find(query)
+      .sort(sortOptions)
+      .skip(skip)
+      .limit(Number(limit))
+      .populate("seller", "name contact");
+
+    const total = await Car.countDocuments(query);
+
+    
+    res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          total,
+          page: Number(page),
+          limit: Number(limit),
+          cars,
+        },
+        cars.length
+          ? "Cars fetched successfully"
+          : "No cars found for the applied filters"
+      )
+    );
+  } catch (error) {
+    console.error("❌ Error fetching cars:", error);
+    throw new ApiError(500, "Failed to fetch cars. Please try again.");
+  }
+}),
+
   latestCar: asyncHandler(async (req, res) => {
     try {
       const cars = await Car.find({ status: "approved" })

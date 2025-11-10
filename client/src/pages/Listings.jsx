@@ -27,6 +27,7 @@ import {
   transmissions,
   budgetRanges,
 } from "../mockData";
+import { getCarByCategory } from "../api/car";
 
 const Listings = () => {
   const [searchParams] = useSearchParams();
@@ -53,7 +54,7 @@ const Listings = () => {
     // note: we intentionally do NOT override user's other selected filters here
   }, [searchParams]);
 
-  useEffect(() => {
+  useEffect(async () => {
     let filtered = [...mockCars];
 
     // ----- CATEGORY handling (new) -----
@@ -62,6 +63,8 @@ const Listings = () => {
     if (categoryParam) {
       if (categoryParam === "latest") {
         // Sort by createdAt/addedAt if available else fallback to year, newest first
+        console.log(await getCarByCategory("latest"));
+        
         filtered = filtered.slice().sort((a, b) => {
           const aDate = new Date(a.createdAt || a.addedAt || 0).getTime() || 0;
           const bDate = new Date(b.createdAt || b.addedAt || 0).getTime() || 0;

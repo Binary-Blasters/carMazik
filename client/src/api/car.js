@@ -31,3 +31,8 @@ export const getLatestCars = async () => {
   const response = await axios.get(`${API_URL}/cars/latest`,{withCredentials: true});
   return response.data;
 }
+
+export const getCarByCategory = async (category) => {
+  const response = await axios.get(`${API_URL}/cars?category=${category}`,{withCredentials: true});
+  return response.data;
+}
