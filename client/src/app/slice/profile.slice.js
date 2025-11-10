@@ -8,8 +8,8 @@ export const fetchProfile = createAsyncThunk(
     try {
       const endpoint =
         role === "seller"
-          ? "http://localhost:3000/api/v1/seller"
-          : "http://localhost:3000/api/v1/user";
+          ? `${import.meta.env.VITE_API_URL}/seller`
+          : `${import.meta.env.VITE_API_URL}/user`;
 
       const res = await axios.get(endpoint, { withCredentials: true });
       return res.data.data;

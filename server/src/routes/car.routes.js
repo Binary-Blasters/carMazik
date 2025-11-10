@@ -27,4 +27,9 @@ router
     carController.uploadCar                //checked
   );
 
+  router.route("/seller/pending").get(carController.getSellerPendingCars); //checked
+  router.route("/seller/rejected").get(carController.getRejectedCars); //checked
+  router.route("/seller/sold").get(carController.getSoldCars); //checked
+
+
 export default router;

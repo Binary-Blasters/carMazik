@@ -11,3 +11,23 @@ export const getCarById = async (id) => {
   const response = await axios.get(`${API_URL}/cars/${id}`,{withCredentials: true});
   return response.data;
 }
+
+export const getSellerPendingCars = async () => {
+  const response = await axios.get(`${API_URL}/cars/seller/pending`,{withCredentials: true});
+  return response.data;
+}
+
+export const getRejectedCars = async () => {
+  const response = await axios.get(`${API_URL}/cars/seller/rejected`,{withCredentials: true});
+  return response.data;
+}
+
+export const getSellerSoldCars = async () => {
+  const response = await axios.get(`${API_URL}/cars/seller/sold`,{withCredentials: true});
+  return response.data;
+}
+
+export const getLatestCars = async () => {
+  const response = await axios.get(`${API_URL}/cars/latest`,{withCredentials: true});
+  return response.data;
+}

@@ -191,19 +191,34 @@ export const adminController = {
       .json(new ApiResponse(200, approvedCar, "Car approved"));
   }),
 
-  rejectCar: asyncHandler(async (req, res) => {
-    const { car_id } = req.params;
+ rejectCar: asyncHandler(async (req, res) => {
+  const { car_id } = req.params;
+  const { reason } = req.body; // optional rejection reason (sent from admin panel)
 
-    const rejectedCar = await Car.findByIdAndUpdate(
-      car_id,
-      { status: "rejected" },
-      { new: true }
+  if (!car_id) {
+    throw new ApiError(400, "Car ID is required to reject a car");
+  }
+
+  const car = await Car.findById(car_id);
+  if (!car) {
+    throw new ApiError(404, "Car not found");
+  }
+
+  if (car.status === "rejected") {
+    throw new ApiError(400, "Car is already rejected");
+  }
+
+  car.status = "rejected";
+  car.rejectionReason = reason || "No reason provided";
+  car.rejectedAt = new Date();
+
+  await car.save();
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, car, "Car has been successfully rejected.")
     );
-    if (!rejectedCar) {
-      throw new ApiError(404, "Car not found");
-    }
-    return res
-      .status(200)
-      .json(new ApiResponse(200, rejectedCar, "Car rejected"));
-  }),
+}),
+
 };

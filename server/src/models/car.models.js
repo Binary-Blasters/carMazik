@@ -7,26 +7,14 @@ const carSchema = new mongoose.Schema(
       ref: "Seller",
       required: true,
     },
-    title: {
-      type: String,
-      required: true,
-    },
-    brand: {
-      type: String,
-      required: true,
-    },
-    model: {
-      type: String,
-      required: true,
-    },
-    year: {
-      type: Number,
-      required: true,
-    },
-    price: {
-      type: Number,
-      required: true,
-    },
+    title: { type: String, required: true },
+    brand: { type: String, required: true },
+    model: { type: String, required: true },
+    variant: { type: String },
+    bodyType: { type: String },
+    year: { type: Number, required: true },
+    price: { type: Number, required: true },
+    negotiable: { type: Boolean, default: false },
     fuelType: {
       type: String,
       enum: ["Petrol", "Diesel", "CNG", "Electric", "Hybrid"],
@@ -37,47 +25,36 @@ const carSchema = new mongoose.Schema(
       enum: ["Manual", "Automatic"],
       required: true,
     },
-    kmDriven: {
-      type: Number,
-      required: true,
-    },
+    kmDriven: { type: Number, required: true },
     ownership: {
       type: String,
       enum: ["1st Owner", "2nd Owner", "3rd Owner", "4th Owner or More"],
       required: true,
     },
-    color: {
-      type: String,
-    },
-    images: [
-      {
-        type: String,
-      },
-    ],
-    description: {
-      type: String,
-    },
-
+    color: { type: String },
+    mileage: { type: String },
+    seatingCapacity: { type: Number },
+    location: { type: String },
     engine: {
-      capacity: String,
-      power: String,
-      torque: String,
+      capacity: { type: String },
+      power: { type: String },
+      torque: { type: String },
     },
-    mileage: {
-      type: String,
-    },
-    seatingCapacity: {
-      type: Number,
-    },
-
+    features: [{ type: String }],
+    description: { type: String },
+    images: [{ type: String }],
     status: {
       type: String,
       enum: ["pending", "approved", "rejected"],
       default: "pending",
     },
-    isSold: {
-      type: Boolean,
-      default: false,
+    isSold: { type: Boolean, default: false },
+    rejectionReason: {
+      type: String,
+      default: "",
+    },
+    rejectedAt: {
+      type: Date,
     },
   },
   { timestamps: true }

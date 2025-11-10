@@ -41,6 +41,8 @@ const Home = () => {
     })
     .slice(0, 4);
 
+    
+
   const electricCars = mockCars.filter(
     (c) =>
       c.fuelType?.toLowerCase?.() === "electric" ||

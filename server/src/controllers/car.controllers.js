@@ -6,53 +6,104 @@ import fs from "fs";
 import { get } from "http";
 import { Seller } from "../models/seller.model.js";
 import path from "path";
+import sharp from "sharp";
 
 const carController = {
-  uploadCar: asyncHandler(async (req, res) => {
-    const carData = req.body;
-    const carImages = req?.files;
-    const seller_id = req.user?.id;
+  uploadCar : asyncHandler(async (req, res) => {
+  const carData = req.body;
+  const carImages = req?.files;
+  const seller_id = req.user?.id;
 
-    const seller = await Seller.findOne({ userid: seller_id });
+  const seller = await Seller.findOne({ userid: seller_id });
+  if (!seller) throw new ApiError(401, "Unauthorized: Seller not found");
 
-    if (!seller) {
-      throw new ApiError(401, "Unauthorized: Seller not found");
+  if (!carData || !carImages || carImages.length === 0)
+    throw new ApiError(400, "Car data and images are required");
+
+  if (typeof carData.engine === "string") {
+    try {
+      carData.engine = JSON.parse(carData.engine);
+    } catch {
+      carData.engine = {};
     }
+  }
 
-    if (!carData || !carImages || carImages.length === 0) {
-      throw new ApiError(400, "Car data and images are required");
+  if (typeof carData.features === "string") {
+    try {
+      carData.features = JSON.parse(carData.features);
+    } catch {
+      carData.features = [];
     }
+  }
 
-    const imagePaths = req.files.map(file => `/images/cars/${file.filename}`);
+  carData.price = Number(carData.price) || 0;
+  carData.year = Number(carData.year) || null;
+  carData.kmDriven = Number(carData.kmDriven) || 0;
+  carData.seatingCapacity = Number(carData.seatingCapacity) || 0;
 
+  const uploadDir = path.join(process.cwd(), "public", "images", "cars");
+  const watermarkPath = path.join(process.cwd(), "public", "watermark.png");
 
-    const newCar = new Car({
-      ...carData,
-      seller: seller._id,
-      images: imagePaths,
-    });
+  if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+  const imagePaths = [];
+  for (const file of carImages) {
+    const inputPath = file.path;
+    const wmFilename = `wm-${file.filename}`;
+    const outputPath = path.join(uploadDir, wmFilename);
 
     try {
-      await newCar.save();
-      return res
-        .status(201)
-        .json(new ApiResponse(201, "Car uploaded successfully", newCar));
-    } catch (error) {
-      console.log(error);
+      if (fs.existsSync(watermarkPath)) {
+        const watermark = await sharp(watermarkPath)
+          .resize(120)
+          .png()
+          .toBuffer();
 
-      carImages.forEach((file) => {
-        const filePath = path.join(
-          process.cwd(),
-          "public",
-          "images",
-          "cars",
-          file.filename
-        );
-        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-      });
-      throw new ApiError(500, "Failed to create car");
+        await sharp(inputPath)
+          .composite([{ input: watermark, gravity: "southeast", blend: "over" }])
+          .jpeg({ quality: 90 })
+          .toFile(outputPath);
+      } else {
+        await sharp(inputPath).jpeg({ quality: 90 }).toFile(outputPath);
+      }
+
+      imagePaths.push(`/images/cars/${wmFilename}`);
+      fs.unlinkSync(inputPath);
+    } catch (err) {
+      console.error(`Watermark failed for: ${file.filename}`, err);
+      fs.copyFileSync(inputPath, outputPath);
+      imagePaths.push(`/images/cars/${wmFilename}`);
+      fs.unlinkSync(inputPath);
     }
-  }),
+  }
+
+  const newCarData = {
+    ...carData,
+    seller: seller._id,
+    images: imagePaths,
+    features: Array.isArray(carData.features)
+      ? carData.features
+      : [],
+    engine:
+      typeof carData.engine === "object" && carData.engine
+        ? carData.engine
+        : { capacity: "", power: "", torque: "" },
+  };
+
+  try {
+    const newCar = await Car.create(newCarData);
+    res
+      .status(201)
+      .json(new ApiResponse(201, "Car uploaded successfully", newCar));
+  } catch (error) {
+    console.error("❌ Car Save Error:", error);
+    for (const img of imagePaths) {
+      const filePath = path.join(process.cwd(), "public", img);
+      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    }
+    throw new ApiError(500, "Failed to save car details. Please try again.");
+  }
+}),
 
   getCars: asyncHandler(async (req, res) => {
     try {
@@ -244,6 +295,92 @@ const carController = {
       throw new ApiError(500, "Failed to fetch car brands");
     }
   }),
-};
+  getSellerPendingCars: asyncHandler(async (req, res) => {
+  const seller_id = req.user?.id;
+
+  if (!seller_id) throw new ApiError(401, "Unauthorized: No seller ID provided");
+
+  const seller = await Seller.findOne({ userid: seller_id });
+  if (!seller) throw new ApiError(401, "Unauthorized: Seller not found");
+
+  try {
+    const cars = await Car.find({ seller: seller._id, status: "pending" })
+      .sort({ createdAt: -1 })
+      .select("-__v");
+
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        cars,
+        cars.length
+          ? "Pending cars fetched successfully"
+          : "No pending cars found"
+      )
+    );
+  } catch (error) {
+    console.error("❌ Error fetching pending cars:", error);
+    throw new ApiError(500, "Failed to fetch pending cars. Please try again.");
+  }
+}),
+getRejectedCars: asyncHandler(async (req, res) => {
+  const seller_id = req.user?.id;
+  if (!seller_id) throw new ApiError(401, "Unauthorized: No seller ID provided");
+
+  const seller = await Seller.findOne({ userid: seller_id });
+  if (!seller) throw new ApiError(401, "Unauthorized: Seller not found");
+
+  try {
+    const cars = await Car.find({ seller: seller._id, status: "rejected" })
+      .sort({ createdAt: -1 })
+      .select("-__v");
+
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        cars,
+        cars.length > 0
+          ? "Rejected cars fetched successfully"
+          : "No rejected cars found."
+      )
+    );
+  } catch (error) {
+    console.error("❌ Error fetching rejected cars:", error);
+    throw new ApiError(500, "Failed to fetch rejected cars. Please try again.");
+  }
+}),
+getSoldCars: asyncHandler(async (req, res) => {
+  const sellerId = req.user?.id;
+  if (!sellerId) throw new ApiError(401, "Unauthorized: No seller ID provided");
+
+ 
+  const seller = await Seller.findOne({ userid: sellerId });
+  if (!seller) throw new ApiError(401, "Unauthorized: Seller not found");
+
+  try {
+   
+    const soldCars = await Car.find({ seller: seller._id, status: "sold" })
+      .sort({ createdAt: -1 })
+      .select("-__v");
+
+   
+    const message =
+      soldCars.length > 0
+        ? "✅ Sold cars fetched successfully"
+        : "No sold cars found.";
+
+    return res.status(200).json(new ApiResponse(200, soldCars, message));
+  } catch (error) {
+    console.error("❌ Error fetching sold cars:", error.message);
+    throw new ApiError(
+      500,
+      "Failed to fetch sold cars. Please try again later."
+    );
+  }
+}),
+
+
+
+
+}
 
 export { carController };

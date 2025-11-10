@@ -4,7 +4,7 @@ import { Link } from "react-router";
 
 export default function ApprovedCarCard({ car }) {
 
-    const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+    const BASE_URL = import.meta.env.VITE_IMAGE_URL || "http://localhost:4000";
 
       const imageUrl = car?.images?.[0]
     ? `${BASE_URL}${car.images[2]}`
