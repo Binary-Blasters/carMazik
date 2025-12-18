@@ -20,6 +20,7 @@ import {
 import axios from "axios";
 import { Progress } from "../../components/ui/progress";
 import CarCard from "../../components/CarCard";
+import { applyForSellerApi } from "../../api/seller";
 
 const WishlistSection  = lazy(() => import ("../../components/dashboard/user/section/WishlistSection"))
 
@@ -117,17 +118,7 @@ const UserDashboard = () => {
     e.preventDefault();
     try {
       setApplying(true);
-      await axios.post(
-        "/api/v1/seller/apply",
-        {
-          ...sellerData,
-          bankDetails: {
-            accountNumber: sellerData.accountNumber,
-            ifscCode: sellerData.ifscCode,
-          },
-        },
-        { withCredentials: true }
-      );
+      await applyForSellerApi(sellerData);
       alert("✅ Seller application submitted successfully!");
       setSellerData({
         shopName: "",

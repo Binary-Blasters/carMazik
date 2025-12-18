@@ -15,4 +15,15 @@ const getApprovedCarsApi = async () => {
     throw error;
   }
 };
-export { getApprovedCarsApi };
+const applyForSellerApi = async (formData) => {
+  try {
+    const response = await axios.post(`${API_URL}/`, formData, {
+      withCredentials: true,
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error applying for seller:", error);
+    throw error;
+  }
+}
+export { getApprovedCarsApi, applyForSellerApi };
