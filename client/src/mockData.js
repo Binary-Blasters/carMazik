@@ -25,7 +25,8 @@ export const mockCars = [
       engine: "1197 cc",
       power: "89 bhp",
       seating: "5 Seater",
-      bootSpace: "268 L"
+      bootSpace: "268 L",
+      chessis: "B-Type"
     }
   },
   {

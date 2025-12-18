@@ -34,6 +34,7 @@ const CarCard = ({ car = {}, onViewDetails }) => {
   const price = car.price || car.amount || null;
   const originalPrice = car.originalPrice || car.oldPrice || null;
   const id = car.id || car._id || car.slug || null;
+  const chessis = car.chessis || car._chessis || car.chess || null;
 
   const isElectric =
     (fuelType && fuelType.toString().toLowerCase().includes("electric")) || car.isElectric === true;
@@ -103,6 +104,10 @@ const CarCard = ({ car = {}, onViewDetails }) => {
             <Droplet className="h-4 w-4 mr-1 text-gray-400" />
             <span>{fuelType}</span>
           </div>
+          {/* <div className="flex items-center">
+            <Droplet className="h-4 w-4 mr-1 text-gray-400" />
+            <span>{chessis}</span>
+          </div> */}
           <div className="flex items-center">
             <Calendar className="h-4 w-4 mr-1 text-gray-400" />
             <span>{formatMileage(mileage)} km</span>
