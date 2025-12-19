@@ -4,7 +4,7 @@ import {verifyJWT} from "../middlewares/auth.middlewares.js"
 
 const router = express.Router()
 
-router.use(verifyJWT("user"))
+
 
 router.route("/").get(verifyJWT(), userController.getUserProfile)  //checked
 router.route("/").patch(verifyJWT(), userController.updateUserProfile)  //checked

@@ -56,7 +56,7 @@ const CarCard = ({ car = {}, onViewDetails }) => {
     return new Intl.NumberFormat("en-IN").format(num);
   };
 
-  /* ---------------- DATA ---------------- */
+  /* ---------------- IMAGE (FIXED) ---------------- */
 
   const imageSrc =
     car?.images?.length > 0
@@ -65,7 +65,9 @@ const CarCard = ({ car = {}, onViewDetails }) => {
       ? `${BASE_IMAGE_URL}${car.image}`
       : car.img
       ? `${BASE_IMAGE_URL}${car.img}`
-      : `${BASE_IMAGE_URL}/car-placeholder.png`;
+      : "/car-placeholder.png"; // ✅ LOCAL PLACEHOLDER
+
+  /* ---------------- DATA ---------------- */
 
   const title = car.name || car.title || car.model || "Unknown Model";
   const year = car.year || car.manufactureYear || "-";
@@ -122,8 +124,8 @@ const CarCard = ({ car = {}, onViewDetails }) => {
           src={imageSrc}
           alt={title}
           onError={(e) => {
-            e.currentTarget.onerror = null;
-            e.currentTarget.src = `${BASE_IMAGE_URL}/car-placeholder.png`;
+            e.currentTarget.onerror = null; // 🔥 stop infinite loop
+            e.currentTarget.src = "/car-placeholder.png"; // ✅ LOCAL
           }}
           className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
           loading="lazy"

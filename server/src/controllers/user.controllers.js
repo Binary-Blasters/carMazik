@@ -16,11 +16,11 @@ export const userController = {
     }
 
     const wishList = await WishList.find({ user: req.user._id }).populate({
-      path: "car",
+      path: "cars",
       select: "-__v",
     });
 
-    user.wishList = wishList.map((w) => w.car);
+    user.wishList = wishList.map((w) => w.cars);
 
     res
       .status(200)

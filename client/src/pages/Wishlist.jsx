@@ -21,10 +21,10 @@ const Wishlist = () => {
       return;
     }
 
-    if (user.role && user.role !== "user") {
-      navigate("/");
-      return;
-    }
+    // if (user.role && user.role !== "user") {
+    //   navigate("/");
+    //   return;
+    // }
   }, [user, navigate]);
 
   /* ---------------- FETCH WISHLIST CARS ---------------- */
