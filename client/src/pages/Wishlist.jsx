@@ -1,51 +1,65 @@
-// src/pages/Wishlist.jsx
-import React, { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-import { fetchWishlist } from "../redux/wishlistSlice";
+import { useSelector } from "react-redux";
+import LoadingScreen from "../components/ui/LoadingScreen";
+import { getWishlistCars } from "../api/wishlist";
 import CarCard from "../components/CarCard";
 
 const Wishlist = () => {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const { user } = useSelector((state) => state.auth);
-  const { items, loading } = useSelector((state) => state.wishlist);
+  const wishlistIds = useSelector((state) => state.wishlist.items);
 
-  /* =====================
-     Route Protection
-  ===================== */
+  const [cars, setCars] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  /* ---------------- AUTH ---------------- */
   useEffect(() => {
     if (!user) {
       navigate("/login");
       return;
     }
 
-    // agar role system hai
     if (user.role && user.role !== "user") {
       navigate("/");
       return;
     }
+  }, [user, navigate]);
 
-    dispatch(fetchWishlist());
-  }, [user, dispatch, navigate]);
+  /* ---------------- FETCH WISHLIST CARS ---------------- */
+  useEffect(() => {
+    const loadWishlist = async () => {
+      try {
+        setLoading(true);
+        const data = await getWishlistCars();
+        setCars(data);
+      } catch (err) {
+        console.error("Failed to load wishlist", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  /* =====================
-     Loading
-  ===================== */
-  if (loading) {
-    return (
-      <div className="text-center py-10 text-gray-600">
-        Loading wishlist...
-      </div>
+    if (user) {
+      loadWishlist();
+    }
+  }, [user]);
+
+  /* ---------------- 🔁 SYNC WITH REDUX ---------------- */
+  useEffect(() => {
+    setCars((prevCars) =>
+      prevCars.filter((car) => wishlistIds.includes(car._id))
     );
+  }, [wishlistIds]);
+
+  /* ---------------- UI ---------------- */
+
+  if (loading) {
+    return <LoadingScreen />;
   }
 
-  /* =====================
-     Empty State
-  ===================== */
-  if (!items || items.length === 0) {
+  if (!cars || cars.length === 0) {
     return (
       <div className="text-center py-20">
         <h2 className="text-2xl font-bold mb-2">
@@ -58,9 +72,6 @@ const Wishlist = () => {
     );
   }
 
-  /* =====================
-     Wishlist Grid
-  ===================== */
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold mb-6">
@@ -68,8 +79,8 @@ const Wishlist = () => {
       </h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {items.map((car) => (
-          <CarCard key={car._id || car.id} car={car} />
+        {cars.map((car) => (
+          <CarCard key={car._id} car={car} />
         ))}
       </div>
     </div>

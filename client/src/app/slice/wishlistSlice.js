@@ -1,34 +1,27 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-/* =========================
-   INITIAL STATE
-========================= */
+const BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
 const initialState = {
-  items: [],        // wishlist cars (array of car objects)
+  items: [],          // carIds
   loading: false,
   error: null,
+  loadingIds: [],     // 👈 per car loading
 };
 
-/* =========================
-   ASYNC THUNKS
-========================= */
-
-// 1️⃣ GET wishlist (GET /wishlist)
+/* ---------------- FETCH ---------------- */
 export const fetchWishlist = createAsyncThunk(
   "wishlist/fetch",
-  async (_, { getState, rejectWithValue }) => {
+  async (_, { rejectWithValue }) => {
     try {
-      const token = getState().auth.token;
-
-      const res = await axios.get("/wishlist", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const res = await axios.get(`${BASE_URL}/user/wishlist`, {
+        withCredentials: true,
       });
 
-      // backend response: ApiResponse -> data = cars array
-      return res.data.data || [];
+      const cars = res.data.data || [];
+      return cars.map((car) => car._id);
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Failed to fetch wishlist"
@@ -37,23 +30,16 @@ export const fetchWishlist = createAsyncThunk(
   }
 );
 
-// 2️⃣ ADD to wishlist (POST /wishlist/add)
+/* ---------------- ADD ---------------- */
 export const addToWishlist = createAsyncThunk(
   "wishlist/add",
-  async (carId, { getState, rejectWithValue }) => {
+  async (carId, { rejectWithValue }) => {
     try {
-      const token = getState().auth.token;
-
       await axios.post(
-        "/wishlist/add",
+        `${BASE_URL}/user/wishlist/add`,
         { carId },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { withCredentials: true }
       );
-
       return carId;
     } catch (error) {
       return rejectWithValue(
@@ -63,20 +49,15 @@ export const addToWishlist = createAsyncThunk(
   }
 );
 
-// 3️⃣ REMOVE from wishlist (DELETE /wishlist/remove)
+/* ---------------- REMOVE ---------------- */
 export const removeFromWishlist = createAsyncThunk(
   "wishlist/remove",
-  async (carId, { getState, rejectWithValue }) => {
+  async (carId, { rejectWithValue }) => {
     try {
-      const token = getState().auth.token;
-
-      await axios.delete("/wishlist/remove", {
-        data: { carId }, // DELETE body goes inside `data`
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      await axios.delete(`${BASE_URL}/user/wishlist/remove`, {
+        data: { carId },
+        withCredentials: true,
       });
-
       return carId;
     } catch (error) {
       return rejectWithValue(
@@ -86,47 +67,58 @@ export const removeFromWishlist = createAsyncThunk(
   }
 );
 
-/* =========================
-   SLICE
-========================= */
+/* ---------------- SLICE ---------------- */
 const wishlistSlice = createSlice({
   name: "wishlist",
   initialState,
   reducers: {
     clearWishlist(state) {
       state.items = [];
+      state.loadingIds = [];
       state.loading = false;
       state.error = null;
     },
   },
   extraReducers: (builder) => {
     builder
-
-      /* ---- FETCH ---- */
-      .addCase(fetchWishlist.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
+      /* FETCH */
       .addCase(fetchWishlist.fulfilled, (state, action) => {
-        state.loading = false;
         state.items = action.payload;
       })
-      .addCase(fetchWishlist.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
 
-      /* ---- ADD ---- */
+      /* ADD */
+      .addCase(addToWishlist.pending, (state, action) => {
+        state.loadingIds.push(action.meta.arg);
+      })
       .addCase(addToWishlist.fulfilled, (state, action) => {
-        // Optimistic add: backend already saved
-        // Car object will be refetched later if needed
-        state.items.push({ _id: action.payload });
+        state.loadingIds = state.loadingIds.filter(
+          (id) => id !== action.payload
+        );
+        if (!state.items.includes(action.payload)) {
+          state.items.push(action.payload);
+        }
+      })
+      .addCase(addToWishlist.rejected, (state, action) => {
+        state.loadingIds = state.loadingIds.filter(
+          (id) => id !== action.meta.arg
+        );
       })
 
-      /* ---- REMOVE ---- */
+      /* REMOVE */
+      .addCase(removeFromWishlist.pending, (state, action) => {
+        state.loadingIds.push(action.meta.arg);
+      })
       .addCase(removeFromWishlist.fulfilled, (state, action) => {
+        state.loadingIds = state.loadingIds.filter(
+          (id) => id !== action.payload
+        );
         state.items = state.items.filter(
-          (car) => (car._id || car.id) !== action.payload
+          (id) => id !== action.payload
+        );
+      })
+      .addCase(removeFromWishlist.rejected, (state, action) => {
+        state.loadingIds = state.loadingIds.filter(
+          (id) => id !== action.meta.arg
         );
       });
   },

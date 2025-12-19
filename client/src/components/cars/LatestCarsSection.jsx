@@ -5,6 +5,7 @@ import { Button } from "../ui/button";
 import { getLatestCars } from "../../api/car";
 import TempCarCard from "./TempCarCard";
 import CarmazikAlert from "../ui/CarmazikAlert";
+import CarCard from "../CarCard";
 
 const LatestCarsSection = () => {
   const [latestCars, setLatestCars] = useState([]);
@@ -78,7 +79,7 @@ const LatestCarsSection = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {latestCars.map((car) => (
-              <TempCarCard key={car._id} car={car} />
+              <CarCard key={car._id} car={car} />
             ))}
           </div>
         )}

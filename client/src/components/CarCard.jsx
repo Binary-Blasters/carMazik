@@ -1,4 +1,3 @@
-// src/components/CarCard.jsx
 import React from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -21,21 +20,20 @@ import {
   removeFromWishlist,
 } from "../app/slice/wishlistSlice";
 
+const BASE_IMAGE_URL = import.meta.env.VITE_IMAGE_URL || "";
 
 const CarCard = ({ car = {}, onViewDetails }) => {
-  /* =====================
-     Redux + Router
-  ===================== */
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const locationRoute = useLocation();
 
   const { user } = useSelector((state) => state.auth);
-  const wishlistItems = useSelector((state) => state.wishlist.items);
+  const { items: wishlistIds, loadingIds } = useSelector(
+    (state) => state.wishlist
+  );
 
-  /* =====================
-     Helpers
-  ===================== */
+  /* ---------------- HELPERS ---------------- */
+
   const formatPrice = (price) => {
     const num =
       typeof price === "number"
@@ -58,40 +56,43 @@ const CarCard = ({ car = {}, onViewDetails }) => {
     return new Intl.NumberFormat("en-IN").format(num);
   };
 
-  /* =====================
-     Normalized car fields
-  ===================== */
-  const imageSrc = car.image || car.img || "/images/car-placeholder.png";
+  /* ---------------- DATA ---------------- */
+
+  const imageSrc =
+    car?.images?.length > 0
+      ? `${BASE_IMAGE_URL}${car.images[0]}`
+      : car.image
+      ? `${BASE_IMAGE_URL}${car.image}`
+      : car.img
+      ? `${BASE_IMAGE_URL}${car.img}`
+      : `${BASE_IMAGE_URL}/car-placeholder.png`;
+
   const title = car.name || car.title || car.model || "Unknown Model";
   const year = car.year || car.manufactureYear || "-";
   const transmission = car.transmission || "N/A";
   const fuelType = car.fuelType || car.fuel || "N/A";
-  const mileage = car.mileage || car.km || 0;
+  const mileage = car.mileage || car.kmDriven || 0;
   const location = (car.location || "").toString();
   const shortLocation = location ? location.split(",")[0] : "Unknown";
   const price = car.price || car.amount || null;
   const originalPrice = car.originalPrice || car.oldPrice || null;
-  const id = car._id || car.id || car.slug || null;
+  const id = car._id || car.id || null;
 
   const isElectric =
-    (fuelType && fuelType.toString().toLowerCase().includes("electric")) ||
-    car.isElectric === true;
+    fuelType?.toLowerCase().includes("electric") || car.isElectric === true;
 
-  /* =====================
-     Wishlist logic
-  ===================== */
-  const isWishlisted = wishlistItems?.some(
-    (item) => (item._id || item.id) === id
-  );
+  /* ---------------- ❤️ WISHLIST ---------------- */
+
+  const isWishlisted = id && wishlistIds.includes(id);
+  const isLoading = id && loadingIds.includes(id);
 
   const handleWishlistToggle = () => {
-    // 🔐 Login compulsory
     if (!user) {
       navigate("/login", { state: { from: locationRoute.pathname } });
       return;
     }
 
-    if (!id) return;
+    if (!id || isLoading) return;
 
     if (isWishlisted) {
       dispatch(removeFromWishlist(id));
@@ -100,54 +101,62 @@ const CarCard = ({ car = {}, onViewDetails }) => {
     }
   };
 
-  /* =====================
-     View details
-  ===================== */
+  /* ---------------- VIEW ---------------- */
+
   const handleView = () => {
     if (typeof onViewDetails === "function") {
       onViewDetails(car);
     }
   };
 
-  /* =====================
-     JSX
-  ===================== */
+  /* ---------------- UI ---------------- */
+
   return (
     <Card
       className={`group overflow-hidden transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl border-gray-200 ${
-        isElectric ? "ring-1 ring-green-50" : ""
+        isElectric ? "ring-1 ring-green-100" : ""
       }`}
-      role="article"
-      aria-labelledby={`car-title-${id || Math.random()}`}
     >
       <div className="relative overflow-hidden">
         <img
           src={imageSrc}
           alt={title}
-          onError={(e) =>
-            (e.currentTarget.src = "/images/car-placeholder.png")
-          }
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = `${BASE_IMAGE_URL}/car-placeholder.png`;
+          }}
           className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
           loading="lazy"
         />
 
-        {/* ❤️ Wishlist button (UPDATED) */}
+        {/* ❤️ HEART = LOADER */}
         <button
           onClick={handleWishlistToggle}
-          className="absolute top-3 right-3 bg-white p-2 rounded-full shadow-lg hover:bg-red-50 transition-colors"
+          disabled={isLoading}
+          className={`absolute top-3 right-3 bg-white p-2 rounded-full shadow-lg transition-colors
+            ${
+              isLoading
+                ? "cursor-not-allowed opacity-80"
+                : "hover:bg-red-50"
+            }
+          `}
           aria-label="Toggle wishlist"
           type="button"
         >
           <Heart
-            className={`h-5 w-5 transition-colors ${
-              isWishlisted
-                ? "text-red-500 fill-red-500"
-                : "text-gray-600 hover:text-red-500"
-            }`}
+            className={`h-5 w-5 transition-all duration-300
+              ${
+                isLoading
+                  ? "animate-spin text-red-400"
+                  : isWishlisted
+                  ? "text-red-500 fill-red-500"
+                  : "text-gray-600 hover:text-red-500 hover:fill-red-500"
+              }
+            `}
           />
         </button>
 
-        {/* Certified badge */}
+        {/* Certified */}
         {car.certified && (
           <Badge
             className={`absolute top-3 left-3 ${
@@ -161,7 +170,7 @@ const CarCard = ({ car = {}, onViewDetails }) => {
           </Badge>
         )}
 
-        {/* Electric badge */}
+        {/* Electric */}
         {isElectric && (
           <span className="absolute top-12 left-3 inline-flex items-center gap-1 bg-gradient-to-r from-green-200 to-green-300 text-green-800 text-xs font-semibold px-2 py-1 rounded-full shadow-sm">
             <Zap className="h-3 w-3" />
@@ -172,10 +181,7 @@ const CarCard = ({ car = {}, onViewDetails }) => {
 
       <CardContent className="p-4">
         <div className="mb-2">
-          <h3
-            id={`car-title-${id || Math.random()}`}
-            className="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors"
-          >
+          <h3 className="text-lg font-bold text-gray-900 truncate">
             {title}
           </h3>
           <p className="text-sm text-gray-500">{year}</p>
@@ -184,15 +190,15 @@ const CarCard = ({ car = {}, onViewDetails }) => {
         <div className="grid grid-cols-2 gap-2 mb-3 text-sm text-gray-600">
           <div className="flex items-center">
             <Settings className="h-4 w-4 mr-1 text-gray-400" />
-            <span>{transmission}</span>
+            {transmission}
           </div>
           <div className="flex items-center">
             <Droplet className="h-4 w-4 mr-1 text-gray-400" />
-            <span>{fuelType}</span>
+            {fuelType}
           </div>
           <div className="flex items-center">
             <Calendar className="h-4 w-4 mr-1 text-gray-400" />
-            <span>{formatMileage(mileage)} km</span>
+            {formatMileage(mileage)} km
           </div>
           <div className="flex items-center">
             <MapPin className="h-4 w-4 mr-1 text-gray-400" />

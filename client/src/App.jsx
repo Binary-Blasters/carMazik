@@ -17,6 +17,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import PendingSellers from "./pages/admin/PendingSellers";
 import Users from "./pages/admin/Users";
 import BlockedUsers from "./pages/admin/BlockedUsers";
+import Wishlist from "./pages/Wishlist";
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
               <Route path="/car/:id" element={<CarDetails />} />
               <Route path="/dashboard" element={<UserDashboard />} />
               <Route path="/seller/dashboard" element={<SellerDashboard />} />
+              <Route path="/wishlist" element={<Wishlist />} />
 
 
               <Route path="/admin" element={<AdminLayout />}>

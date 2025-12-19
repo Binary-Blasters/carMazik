@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router";
 import { useCars } from "../hooks/useCars";
 import CarCard from "../components/CarCard";
 import { Button } from "../components/ui/button";
+import LoadingScreen from "../components/ui/LoadingScreen"
 
 const Listings = () => {
   const [searchParams] = useSearchParams();
@@ -35,7 +36,7 @@ const Listings = () => {
           : "All Cars"}
       </h1>
 
-      {loading && <p className="text-center">Loading...</p>}
+      {loading && <LoadingScreen />}
 
       {!loading && cars.length === 0 && (
         <p className="text-center text-gray-500">
