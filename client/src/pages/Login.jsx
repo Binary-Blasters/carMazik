@@ -33,6 +33,10 @@ export default function Login({ onClose }) {
         text: "🎉 Login successful! Redirecting...",
       });
 
+      if (user.role === "admin") {
+        navigate("/admin");
+      }
+
       setTimeout(() => {
         window.location.reload()
         onClose();

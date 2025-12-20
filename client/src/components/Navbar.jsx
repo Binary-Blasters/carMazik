@@ -15,6 +15,7 @@ import { Input } from "./ui/input";
 import Login from "../pages/Login";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../app/slice/auth.slice";
+import { fetchWishlist, clearWishlist } from "../app/slice/wishlistSlice";
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -31,7 +32,18 @@ const Navbar = () => {
   const { token, user } = useSelector((state) => state.auth);
   const isLoggedIn = Boolean(token);
 
-  const dispach = useDispatch()
+
+
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    if (token) {
+      dispatch(fetchWishlist());
+    } else {
+      // logout / token remove hone par wishlist clear
+      dispatch(clearWishlist());
+    }
+  }, [token, dispatch]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -172,17 +184,18 @@ const Navbar = () => {
 
             <div className="hidden md:flex items-center space-x-6">
               <Link
-                to="/"
+                to={`${user?.role === "seller" ? "/seller/dashboard" : "/dashboard"}`}
                 className="text-gray-700 hover:text-blue-600 font-medium transition-colors"
               >
                 Sell Car
               </Link>
-              <button
+              <Link
+                to="/wishlist"
                 className="text-gray-700 hover:text-blue-600 transition-colors cursor-pointer"
                 aria-label="favorites"
               >
                 <Heart className="h-6 w-6" />
-              </button>
+              </Link>
               {isLoggedIn ? (
                 <div className="relative" ref={userMenuRef}>
                   <button
@@ -212,7 +225,7 @@ const Navbar = () => {
                       <button
                         onClick={() => {
                           setUserMenuOpen(false);
-                          dispach(logout());
+                          dispatch(logout());
                         }}
                         className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
                       >

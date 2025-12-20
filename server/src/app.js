@@ -3,6 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import { fileURLToPath } from "url";
 import path from "path";
+import rateLimit from "express-rate-limit";
 
 import authRouter from "./routes/auth.routes.js";
 import sellerRouter from "./routes/seller.routes.js";
@@ -15,6 +16,14 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const limiter = rateLimit({
+  windowMs: 1 * 60 * 1000, 
+  max: 100,               
+  message: "Too many requests, try again later",
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 app.use(
   cors({
     origin: "http://localhost:5173",
@@ -24,6 +33,7 @@ app.use(
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(limiter)
 
 
 const staticPath = path.resolve(__dirname, "../public");
