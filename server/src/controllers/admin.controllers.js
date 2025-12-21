@@ -84,6 +84,57 @@ export const adminController = {
         new ApiResponse(200, allSellers, "All active sellers featched")
       );
   }),
+  blockSeller: asyncHandler(async (req, res) => {
+    const { seller_id } = req.params;
+    const blockedSeller = await Seller.findByIdAndUpdate(
+      seller_id,
+      {
+        isBlocked: true,
+      },
+      {
+        new: true,
+      }
+    );
+    if (!blockedSeller) {
+      throw new ApiError(404, "Seller not found");
+    }
+    return res
+      .status(200)
+      .json(new ApiResponse(200, blockedSeller, "Seller blocked"));
+  }),
+  unblockSeller: asyncHandler(async (req, res) => {
+    const { seller_id } = req.params;
+    const unblockedSeller = await Seller.findByIdAndUpdate(
+      seller_id,
+      {
+        isBlocked: false,
+      },
+      {
+        new: true,
+      }
+    );
+    if (!unblockedSeller) {
+      throw new ApiError(404, "Seller not found");
+    }
+    return res
+      .status(200)
+      .json(new ApiResponse(200, unblockedSeller, "Seller unblocked"));
+  }),
+  getBLockedSellers: asyncHandler(async (req, res) => {
+    const blockedSellers = await Seller.find({ isBlocked: true }); 
+    if (!blockedSellers || blockedSellers.length < 1) {
+      throw new ApiError(404, "No Blocked sellers");
+    }
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          blockedSellers,
+          "Blocked sellers fetched successfully"
+        )
+      );
+  }),
 
   //user
   getAllActiveUsers: asyncHandler(async (req, res) => {
@@ -232,4 +283,27 @@ export const adminController = {
     );
 }),
 
+getStats: asyncHandler(async (req, res) => {
+  const totalUsers = await User.countDocuments({ role: "user" });
+  const totalSellers = await Seller.countDocuments({ verificationStatus: "approved" });
+  const totalCars = await Car.countDocuments({ status: "approved" });
+  const pendingCars = await Car.countDocuments({ status: "pending" });
+  const pendingSellers = await Seller.countDocuments({ verificationStatus: "pending" });
+  const blockedUsers = await User.countDocuments({ role: "user", isBlocked: true });
+
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        totalUsers,
+        totalSellers,
+        totalCars,
+        pendingCars,
+        pendingSellers,
+        blockedUsers,
+      },
+      "Statistics fetched successfully"
+    )
+  )
+}),
 };

@@ -1,26 +1,22 @@
 import React, { useEffect, useState } from "react";
-import {
-  UserCheck,
-  Store,
-  ShieldX,
-} from "lucide-react";
+import { UserX, ShieldCheck, Store } from "lucide-react";
 import LoadingScreen from "../../components/ui/LoadingScreen";
 import CarmazikAlert from "../../components/ui/CarmazikAlert";
 import { adminService } from "../../api/admin";
 import { getErrorMessage } from "../../utils/getErrorMessage";
 
-export default function ActiveSellers() {
+export default function BlockedSellers() {
   const [sellers, setSellers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(null);
   const [alert, setAlert] = useState(null);
 
-  /* ---------------- LOAD ACTIVE SELLERS ---------------- */
-  const fetchActiveSellers = async () => {
+  /* ---------------- LOAD BLOCKED SELLERS ---------------- */
+  const fetchBlockedSellers = async () => {
     try {
       setLoading(true);
-      const res = await adminService.getActiveSellers();
-      setSellers(res.data.data);
+      const res = await adminService.getBlockedSellers();
+      setSellers(res.data.data); // ApiResponse -> data
     } catch (error) {
       setAlert({
         type: "error",
@@ -33,14 +29,14 @@ export default function ActiveSellers() {
   };
 
   useEffect(() => {
-    fetchActiveSellers();
+    fetchBlockedSellers();
   }, []);
 
-  /* ---------------- BLOCK SELLER ---------------- */
-  const handleBlock = async (sellerId) => {
+  /* ---------------- UNBLOCK SELLER ---------------- */
+  const handleUnblock = async (sellerId) => {
     try {
       setActionLoading(sellerId);
-      await adminService.blockSeller(sellerId);
+      await adminService.unblockSeller(sellerId);
 
       // optimistic update
       setSellers((prev) =>
@@ -48,14 +44,14 @@ export default function ActiveSellers() {
       );
 
       setAlert({
-        type: "error",
-        title: "Seller Blocked",
-        message: "Seller has been blocked successfully.",
+        type: "success",
+        title: "Seller Unblocked",
+        message: "Seller has been unblocked successfully.",
       });
     } catch (error) {
       setAlert({
         type: "error",
-        title: "Block Failed",
+        title: "Unblock Failed",
         message: getErrorMessage(error),
       });
     } finally {
@@ -64,7 +60,7 @@ export default function ActiveSellers() {
   };
 
   if (loading) {
-    return <LoadingScreen message="Loading active sellers..." />;
+    return <LoadingScreen message="Loading blocked sellers..." />;
   }
 
   return (
@@ -74,9 +70,9 @@ export default function ActiveSellers() {
       )}
 
       {/* HEADER */}
-      <h2 className="text-2xl sm:text-3xl font-bold mb-6 bg-gradient-to-r from-green-600 to-orange-500 bg-clip-text text-transparent flex items-center gap-2">
-        <UserCheck className="h-6 w-6 text-green-600" />
-        Active Sellers
+      <h2 className="text-2xl sm:text-3xl font-bold mb-6 bg-gradient-to-r from-red-600 to-orange-500 bg-clip-text text-transparent flex items-center gap-2">
+        <UserX className="h-6 w-6 text-red-600" />
+        Blocked Sellers
       </h2>
 
       {/* TABLE */}
@@ -112,33 +108,35 @@ export default function ActiveSellers() {
                 className="border-t hover:bg-gray-50/70 transition"
               >
                 <td className="px-4 py-3 font-medium text-gray-800">
-                  {seller?.name || "—"}
+                  {seller.userid?.name || "—"}
                 </td>
                 <td className="px-4 py-3 text-gray-600">
-                  {seller?.email || "—"}
+                  {seller.userid?.email || "—"}
                 </td>
                 <td className="px-4 py-3 text-gray-600">
-                  {seller?.phone || "—"}
+                  {seller.userid?.phonenumber || "—"}
                 </td>
                 <td className="px-4 py-3 text-gray-600">
                   {seller.shopName || "—"}
                 </td>
 
                 <td className="px-4 py-3">
-                  <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700">
+                  <span className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full bg-red-100 text-red-700">
                     <Store className="h-3 w-3" />
-                    Approved
+                    Blocked
                   </span>
                 </td>
 
                 <td className="px-4 py-3 text-center">
                   <button
                     disabled={actionLoading === seller._id}
-                    onClick={() => handleBlock(seller._id)}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 transition"
+                    onClick={() => handleUnblock(seller._id)}
+                    className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 transition"
                   >
-                    <ShieldX className="h-4 w-4" />
-                    {actionLoading === seller._id ? "Blocking..." : "Block"}
+                    <ShieldCheck className="h-4 w-4" />
+                    {actionLoading === seller._id
+                      ? "Unblocking..."
+                      : "Unblock"}
                   </button>
                 </td>
               </tr>
@@ -148,7 +146,7 @@ export default function ActiveSellers() {
 
         {sellers.length === 0 && (
           <p className="text-center text-gray-500 py-6">
-            No active sellers found.
+            No blocked sellers found.
           </p>
         )}
       </div>

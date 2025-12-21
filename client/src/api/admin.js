@@ -87,8 +87,31 @@ export const adminService = {
     axios.get(`${BASE_URL}/admin/sellers/pending/${sellerId}`, {
       withCredentials: true,
     }),
-    getActiveSellers: async () =>
+  getActiveSellers: async () =>
     axios.get(`${BASE_URL}/admin/sellers/`, {
       withCredentials: true,
     }),
+  blockSeller: async (sellerId) =>
+    axios.patch(
+      `${BASE_URL}/admin/sellers/block/${sellerId}`,
+      {},
+      { withCredentials: true }
+    ),
+
+  unblockSeller: async (sellerId) =>
+    axios.patch(
+      `${BASE_URL}/admin/sellers/unblock/${sellerId}`,
+      {},
+      { withCredentials: true }
+    ),
+  getBlockedSellers: async () =>
+    axios.get(`${BASE_URL}/admin/sellers/blocked`, {
+      withCredentials: true,
+    }),
+
+  getStats: async () => {
+    return await axios.get(`${BASE_URL}/admin/stats`, {
+      withCredentials: true,
+    });
+  },
 };

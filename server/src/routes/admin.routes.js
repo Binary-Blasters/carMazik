@@ -5,12 +5,17 @@ import {verifyJWT} from "../middlewares/auth.middlewares.js"
 const router = express.Router()
 
 router.use(verifyJWT("admin"))
-router.route("/sellers").get(adminController.getAllActiveSellers)
+
+router.route("/stats").get(adminController.getStats) //checked
+
+router.route("/sellers").get(adminController.getAllActiveSellers) //checked
 router.route("/sellers/pending").get(adminController.getPendingSellers) //checked
 router.route("/sellers/pending/:seller_id").get(adminController.getPendingSellersById) //checked
 router.route("/sellers/approve/:seller_id").patch(adminController.approveSeller)    //checked
-router.route("/sellers/reject/:seller_id").patch(adminController.rejectSeller)
-
+router.route("/sellers/reject/:seller_id").patch(adminController.rejectSeller) //checked
+router.route("/sellers/block/:seller_id").patch(adminController.blockSeller) //checked
+router.route("/sellers/unblock/:seller_id").patch(adminController.unblockSeller)  //checked
+router.route("/sellers/blocked").get(adminController.getBLockedSellers)  //checked
 //user
 router.route("/users/blocked").get(adminController.getBlockedUsers)  //checked
 

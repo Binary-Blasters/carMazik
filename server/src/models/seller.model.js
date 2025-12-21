@@ -70,6 +70,10 @@ const sellerSchema = new mongoose.Schema(
         default: false,
       },
     },
+    isBlocked: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

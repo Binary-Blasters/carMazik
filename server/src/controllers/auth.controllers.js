@@ -56,6 +56,9 @@ const authController = {
     if (!user) {
       throw new ApiError(404, "User not found");
     }
+    if(user.role==="seller" && user.isBlocked){
+      throw new ApiError(403, "Your seller account is blocked. Please contact support for assistance.");
+    }
     const isPasswordCorrect = await user.isPasswordCorrect(password);
     if (!isPasswordCorrect) {
       throw new ApiError(400, "Worng password ");

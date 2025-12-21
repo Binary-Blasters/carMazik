@@ -3,6 +3,7 @@ import { verifyJWT } from "../middlewares/auth.middlewares.js";
 import { checkSellerApproval } from "../middlewares/checkSellerApproval.middlewares.js";
 import { upload } from "../middlewares/multer.middlewares.js";
 import { carController } from "../controllers/car.controllers.js";
+import { isSellerBlocked } from "../middlewares/isSellerBlocked.middlewares.js";
 
 const router = express.Router();
 
@@ -19,6 +20,7 @@ router.route("/fuel-type/:fuelType/brands").get(carController.getBrandsByFuelTyp
 
 router.use(verifyJWT("seller")); 
 router.use(checkSellerApproval);
+router.use(isSellerBlocked);
 router
   .route("/")
   

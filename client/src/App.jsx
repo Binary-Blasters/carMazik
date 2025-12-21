@@ -19,6 +19,7 @@ import Users from "./pages/admin/Users";
 import BlockedUsers from "./pages/admin/BlockedUsers";
 import Wishlist from "./pages/Wishlist";
 import ActiveSellers from "./pages/admin/ActiveSellers";
+import BlockedSellers from "./pages/admin/BlockedSellers";
 
 
 function App() {
@@ -45,6 +46,7 @@ function App() {
                 <Route path="users/blocked" element={<BlockedUsers />} />
                 <Route path="sellers" element={<ActiveSellers />} />
                 <Route path="sellers/pending" element={<PendingSellers />} />
+                <Route path="sellers/blocked" element={<BlockedSellers />} />
               </Route>
             </Routes>
           </Layout>
