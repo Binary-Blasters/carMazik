@@ -20,9 +20,13 @@ const sellerController = {
     if (existingSeller) {
       throw new ApiError(400, "You have already applied as a seller");
     }
-
+    const user = await User.findById(req.user?._id);
+    
     const seller = await Seller.create({
       userid: req.user?._id,
+      name: user.name,
+      email: user.email,
+      phone: user.phonenumber,
       shopName,
       gstNumber,
       panNumber,

@@ -5,6 +5,7 @@ import {verifyJWT} from "../middlewares/auth.middlewares.js"
 const router = express.Router()
 
 router.use(verifyJWT("admin"))
+router.route("/sellers").get(adminController.getAllActiveSellers)
 router.route("/sellers/pending").get(adminController.getPendingSellers) //checked
 router.route("/sellers/pending/:seller_id").get(adminController.getPendingSellersById) //checked
 router.route("/sellers/approve/:seller_id").patch(adminController.approveSeller)    //checked

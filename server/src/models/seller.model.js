@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { type } from "os";
 
 const sellerSchema = new mongoose.Schema(
   {
@@ -6,6 +7,18 @@ const sellerSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
+    },
+    name:{
+      type : String,
+      required : true
+    },
+      email:{
+      type : String,
+      required : true
+    },
+    phone:{
+      type : Number,
+      required : true
     },
     shopName: {
       type: String,

@@ -1,24 +1,94 @@
 import { pendingCars } from "../lib/adminDummyData";
+import axios from "axios";
 
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 export const adminService = {
+  //CAR ACTIONS
   getPendingCars: async () => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({ data: pendingCars });
-      }, 600);
+    return await axios.get(`${BASE_URL}/admin/cars/pending`, {
+      withCredentials: true,
     });
   },
 
   approveCar: async (carId) => {
-    return new Promise((resolve) => {
-      setTimeout(() => resolve({ success: true }), 300);
-    });
+    return await axios.post(
+      `${BASE_URL}/admin/cars/approve/${carId}`,
+      {},
+      {
+        withCredentials: true,
+      }
+    );
   },
 
   rejectCar: async (carId) => {
-    return new Promise((resolve) => {
-      setTimeout(() => resolve({ success: true }), 300);
+    return await axios.post(
+      `${BASE_URL}/admin/cars/reject/${carId}`,
+      {},
+      {
+        withCredentials: true,
+      }
+    );
+  },
+  getActiveUSers: async () => {
+    return await axios.get(`${BASE_URL}/admin/users`, {
+      withCredentials: true,
     });
   },
+
+  //USER ACTIONS
+  blockUser: async (userId) => {
+    return await axios.patch(
+      `${BASE_URL}/admin/users/block/${userId}`,
+      {},
+      { withCredentials: true }
+    );
+  },
+
+  unblockUser: async (userId) => {
+    return await axios.patch(
+      `${BASE_URL}/admin/users/unblock/${userId}`,
+      {},
+      { withCredentials: true }
+    );
+  },
+
+  getUserById: async (userId) => {
+    return await axios.get(`${BASE_URL}/admin/users/${userId}`, {
+      withCredentials: true,
+    });
+  },
+  getBlockedUsers: async () =>
+    axios.get(`${BASE_URL}/admin/users/blocked`, {
+      withCredentials: true,
+    }),
+
+  //seller actions
+  getPendingSellers: async () =>
+    axios.get(`${BASE_URL}/admin/sellers/pending`, {
+      withCredentials: true,
+    }),
+
+  approveSeller: async (sellerId) =>
+    axios.patch(
+      `${BASE_URL}/admin/sellers/approve/${sellerId}`,
+      {},
+      { withCredentials: true }
+    ),
+
+  rejectSeller: async (sellerId) =>
+    axios.patch(
+      `${BASE_URL}/admin/sellers/reject/${sellerId}`,
+      {},
+      { withCredentials: true }
+    ),
+
+  getSellerById: async (sellerId) =>
+    axios.get(`${BASE_URL}/admin/sellers/pending/${sellerId}`, {
+      withCredentials: true,
+    }),
+    getActiveSellers: async () =>
+    axios.get(`${BASE_URL}/admin/sellers/`, {
+      withCredentials: true,
+    }),
 };

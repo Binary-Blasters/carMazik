@@ -73,6 +73,17 @@ export const adminController = {
       .status(200)
       .json(new ApiResponse(200, rejectedSeller, "Seller rejected"));
   }),
+  getAllActiveSellers: asyncHandler(async (req, res) => {
+    const allSellers = await Seller.find({ verificationStatus: "approved" });
+    if (!allSellers || allSellers.length < 1) {
+      throw new ApiError(404, "No Active sellers");
+    }
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(200, allSellers, "All active sellers featched")
+      );
+  }),
 
   //user
   getAllActiveUsers: asyncHandler(async (req, res) => {

@@ -8,7 +8,7 @@ import {
 import AdminStatCard from "../../components/admin/AdminStatCard";
 
 const AdminDashboard = () => {
-  // dummy stats
+  
   const stats = {
     pendingCars: 12,
     pendingSellers: 5,

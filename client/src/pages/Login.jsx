@@ -38,16 +38,20 @@ export default function Login({ onClose }) {
       }
 
       setTimeout(() => {
-        window.location.reload()
+        window.location.reload();
         onClose();
       }, 1000);
     } catch (error) {
       console.error("❌ Login failed:", error);
+
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Invalid credentials. Please try again.";
+
       setMessage({
         type: "error",
-        text:
-          error?.response?.data?.message ||
-          "Invalid credentials. Please try again.",
+        text: errorMessage,
       });
     } finally {
       setLoading(false);
@@ -66,7 +70,6 @@ export default function Login({ onClose }) {
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 relative animate-in fade-in zoom-in duration-200">
-        
         <button
           onClick={onClose}
           className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 cursor-pointer"
@@ -74,12 +77,10 @@ export default function Login({ onClose }) {
           <X size={22} />
         </button>
 
-       
         <h2 className="text-2xl font-bold text-center mb-6 bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">
           Welcome Back
         </h2>
 
-        
         {message.text && (
           <div
             className={`mb-4 p-3 rounded-md text-sm ${
@@ -92,7 +93,6 @@ export default function Login({ onClose }) {
           </div>
         )}
 
-     
         <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
           <input
             type="text"
@@ -126,7 +126,6 @@ export default function Login({ onClose }) {
             </button>
           </div>
 
-         
           <Button
             type="submit"
             disabled={loading}
@@ -138,14 +137,12 @@ export default function Login({ onClose }) {
           </Button>
         </form>
 
-        
         <div className="flex items-center my-5">
           <div className="flex-grow h-px bg-gray-200"></div>
           <span className="px-3 text-gray-500 text-sm">OR</span>
           <div className="flex-grow h-px bg-gray-200"></div>
         </div>
 
-        
         <p className="text-center text-gray-600 text-sm">
           Don't have an account?{" "}
           <button

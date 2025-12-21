@@ -13,7 +13,9 @@ export default function PendingCars() {
     try {
       setLoading(true);
       const res = await adminService.getPendingCars();
-      setCars(res.data);
+      console.log(res.data.data.cars);
+      
+      setCars(res.data.data.cars);
     } catch (error) {
       setAlert({
         type: "error",

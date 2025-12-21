@@ -4,15 +4,17 @@ import {
   UserCheck,
   Users,
   UserX,
+  Store
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 const links = [
   { name: "Dashboard", to: "/admin", icon: LayoutDashboard },
   { name: "Pending Cars", to: "/admin/cars/pending", icon: Car },
-  { name: "Pending Sellers", to: "/admin/sellers/pending", icon: UserCheck },
   { name: "Users", to: "/admin/users", icon: Users },
   { name: "Blocked Users", to: "/admin/users/blocked", icon: UserX },
+  { name: "Sellers", to: "/admin/sellers", icon: Store },
+  { name: "Pending Sellers", to: "/admin/sellers/pending", icon: UserCheck },
 ];
 
 const AdminSidebar = () => {
