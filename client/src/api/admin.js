@@ -11,19 +11,24 @@ export const adminService = {
     });
   },
 
-  approveCar: async (carId) => {
-    return await axios.post(
-      `${BASE_URL}/admin/cars/approve/${carId}`,
-      {},
-      {
-        withCredentials: true,
-      }
-    );
+  approveCar: async (car_id) => {
+   try {
+     return await axios.patch(
+       `${BASE_URL}/admin/cars/approve/${car_id}`,
+       {},
+       {
+         withCredentials: true,
+       }
+     );
+   } catch (error) {
+    console.log(error);
+    
+   }
   },
 
-  rejectCar: async (carId) => {
-    return await axios.post(
-      `${BASE_URL}/admin/cars/reject/${carId}`,
+  rejectCar: async (car_id) => {
+    return await axios.patch(
+      `${BASE_URL}/admin/cars/reject/${car_id}`,
       {},
       {
         withCredentials: true,

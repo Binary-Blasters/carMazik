@@ -1,11 +1,7 @@
-import React, { useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
-  Heart,
-  Share2,
-  Phone,
-  Mail,
   MapPin,
   Calendar,
   Fuel,
@@ -13,366 +9,277 @@ import {
   Gauge,
   Users,
   Shield,
-  Award,
   CheckCircle,
   ChevronLeft,
   ChevronRight,
-} from 'lucide-react';
-import { Button } from '../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Badge } from '../components/ui/Badge';
-import { Input } from '../components/ui/input';
-import { Textarea } from '../components/ui/textarea';
-import { mockCars } from '../mockData';
-import CarCard from '../components/CarCard';
-import { toast } from '../hooks/use-toast';
+} from "lucide-react";
+
+import { Button } from "../components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card";
+import { Badge } from "../components/ui/Badge";
+import { Input } from "../components/ui/input";
+import { Textarea } from "../components/ui/textarea";
+import LoadingScreen from "../components/ui/LoadingScreen";
+import CarCard from "../components/CarCard";
+
+import { getCarById, getCars } from "../api/car";
+
+const BASE_IMAGE_URL = import.meta.env.VITE_IMAGE_URL || "";
 
 const CarDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const car = mockCars.find((c) => c.id === parseInt(id));
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    email: '',
-    message: 'I am interested in this car. Please contact me.'
+
+  const [car, setCar] = useState(null);
+  const [relatedCars, setRelatedCars] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentImage, setCurrentImage] = useState(0);
+
+  const [contactForm, setContactForm] = useState({
+    name: "",
+    phone: "",
+    message: "",
   });
+
+  useEffect(() => {
+    const loadCar = async () => {
+      try {
+        setLoading(true);
+
+        const carData = await getCarById(id);
+        setCar(carData);
+
+        const relatedRes = await getCars({
+          brand: carData.brand,
+          fuelType: carData.fuelType,
+          limit: 4,
+        });
+
+        const filtered = relatedRes.cars.filter(
+          (c) => c._id !== carData._id
+        );
+
+        setRelatedCars(filtered);
+      } catch (err) {
+        console.error("❌ Failed to load car", err);
+        setCar(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadCar();
+  }, [id]);
+
+  if (loading) return <LoadingScreen />;
 
   if (!car) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Car not found</h2>
-          <Link to="/listings">
-            <Button>Back to Listings</Button>
-          </Link>
-        </div>
+        <h2 className="text-xl font-bold">Car not found</h2>
       </div>
     );
   }
 
-  const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-    }).format(price);
-  };
+  const images =
+    car.images?.length > 0
+      ? car.images.map((img) => `${BASE_IMAGE_URL}${img}`)
+      : ["/car-placeholder.png"];
 
-  const relatedCars = mockCars
-    .filter((c) => c.id !== car.id && (c.brand === car.brand || c.fuelType === car.fuelType))
-    .slice(0, 4);
+  const price = new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(car.price);
 
-  const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % car.images.length);
-  };
-
-  const prevImage = () => {
-    setCurrentImageIndex((prev) => (prev - 1 + car.images.length) % car.images.length);
-  };
-
-  const handleSubmit = (e) => {
+  const handleContactSubmit = (e) => {
     e.preventDefault();
-    toast({
-      title: "Inquiry Sent!",
-      description: "Our team will contact you shortly.",
-    });
-    setFormData({
-      name: '',
-      phone: '',
-      email: '',
-      message: 'I am interested in this car. Please contact me.'
-    });
+    console.log("📨 Contact Seller:", contactForm);
+    alert("Seller will contact you soon!");
+    setContactForm({ name: "", phone: "", message: "" });
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Back Button */}
-        <Button
-          variant="ghost"
-          onClick={() => navigate(-1)}
-          className="mb-6 cursor-pointer hover:text-blue-600"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
+    <div className="bg-gray-50 min-h-screen">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+
+        {/* Back */}
+        <Button variant="ghost" onClick={() => navigate(-1)} className="mb-6">
+          <ArrowLeft className="h-4 w-4 mr-2" /> Back
         </Button>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
+
+          {/* LEFT */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Image Gallery */}
+
+            {/* Gallery */}
             <Card>
-              <CardContent className="p-0">
-                <div className="relative">
-                  <img
-                    src={car.images[currentImageIndex]}
-                    alt={car.name}
-                    className="w-full h-96 object-cover rounded-t-lg"
-                  />
-                  {car.certified && (
-                    <Badge className="absolute top-4 left-4 bg-green-500 hover:bg-green-600">
-                      <Shield className="h-3 w-3 mr-1" />
-                      Certified
-                    </Badge>
-                  )}
-                  <div className="absolute top-4 right-4 flex space-x-2">
-                    <button className="bg-white p-2 rounded-full shadow-lg hover:bg-gray-100 transition-colors">
-                      <Heart className="h-5 w-5 text-gray-600" />
-                    </button>
-                    <button className="bg-white p-2 rounded-full shadow-lg hover:bg-gray-100 transition-colors">
-                      <Share2 className="h-5 w-5 text-gray-600" />
-                    </button>
-                  </div>
+              <CardContent className="p-0 relative">
+                <img
+                  src={images[currentImage]}
+                  alt={car.title}
+                  className="w-full h-96 object-cover"
+                />
 
-                  {/* Navigation Arrows */}
-                  {car.images.length > 1 && (
-                    <>
-                      <button
-                        onClick={prevImage}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg transition-colors"
-                      >
-                        <ChevronLeft className="h-6 w-6 text-gray-900" />
-                      </button>
-                      <button
-                        onClick={nextImage}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg transition-colors"
-                      >
-                        <ChevronRight className="h-6 w-6 text-gray-900" />
-                      </button>
-                    </>
-                  )}
-                </div>
+                {images.length > 1 && (
+                  <>
+                    <button
+                      onClick={() =>
+                        setCurrentImage((i) => (i - 1 + images.length) % images.length)
+                      }
+                      className="absolute left-4 top-1/2 bg-white p-2 rounded-full"
+                    >
+                      <ChevronLeft />
+                    </button>
+                    <button
+                      onClick={() =>
+                        setCurrentImage((i) => (i + 1) % images.length)
+                      }
+                      className="absolute right-4 top-1/2 bg-white p-2 rounded-full"
+                    >
+                      <ChevronRight />
+                    </button>
+                  </>
+                )}
 
-                {/* Thumbnail Images */}
-                <div className="flex gap-2 p-4 overflow-x-auto">
-                  {car.images.map((image, index) => (
-                    <img
-                      key={index}
-                      src={image}
-                      alt={`${car.name} ${index + 1}`}
-                      onClick={() => setCurrentImageIndex(index)}
-                      className={`w-20 h-20 object-cover rounded cursor-pointer transition-all ${
-                        index === currentImageIndex
-                          ? 'ring-2 ring-blue-600 opacity-100'
-                          : 'opacity-60 hover:opacity-100'
-                      }`}
-                    />
-                  ))}
-                </div>
+                {car.status === "approved" && (
+                  <Badge className="absolute top-4 left-4 bg-green-500">
+                    <Shield className="h-3 w-3 mr-1" /> Verified
+                  </Badge>
+                )}
               </CardContent>
             </Card>
 
-         
+            {/* Details */}
             <Card>
               <CardContent className="p-6">
-                <div className="flex flex-col md:flex-row md:justify-between md:items-start mb-6">
-                  <div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{car.name}</h1>
-                    <div className="flex items-center text-gray-500 space-x-4">
-                      <span className="flex items-center">
-                        <MapPin className="h-4 w-4 mr-1" />
-                        {car.location}
-                      </span>
-                      <span className="flex items-center">
-                        <Calendar className="h-4 w-4 mr-1" />
-                        {car.year}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="mt-4 md:mt-0 text-left md:text-right">
-                    <div className="text-3xl font-bold text-gray-900">{formatPrice(car.price)}</div>
-                    {car.originalPrice && (
-                      <div className="text-gray-400 line-through">{formatPrice(car.originalPrice)}</div>
-                    )}
-                  </div>
+                <h1 className="text-3xl font-bold mb-2">
+                  {car.brand} {car.model} {car.variant}
+                </h1>
+
+                <div className="flex gap-4 text-gray-600 mb-4">
+                  <span><MapPin className="inline h-4 w-4 mr-1" />{car.location}</span>
+                  <span><Calendar className="inline h-4 w-4 mr-1" />{car.year}</span>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                  <div className="bg-gray-50 p-4 rounded-lg text-center">
-                    <Fuel className="h-6 w-6 text-blue-600 mx-auto mb-2" />
-                    <div className="text-sm text-gray-500">Fuel Type</div>
-                    <div className="font-semibold text-gray-900">{car.fuelType}</div>
-                  </div>
-                  <div className="bg-gray-50 p-4 rounded-lg text-center">
-                    <Settings className="h-6 w-6 text-blue-600 mx-auto mb-2" />
-                    <div className="text-sm text-gray-500">Transmission</div>
-                    <div className="font-semibold text-gray-900">{car.transmission}</div>
-                  </div>
-                  <div className="bg-gray-50 p-4 rounded-lg text-center">
-                    <Gauge className="h-6 w-6 text-blue-600 mx-auto mb-2" />
-                    <div className="text-sm text-gray-500">KM Driven</div>
-                    <div className="font-semibold text-gray-900">{car.mileage.toLocaleString()}</div>
-                  </div>
-                  <div className="bg-gray-50 p-4 rounded-lg text-center">
-                    <Users className="h-6 w-6 text-blue-600 mx-auto mb-2" />
-                    <div className="text-sm text-gray-500">Owners</div>
-                    <div className="font-semibold text-gray-900">{car.owners} Owner</div>
-                  </div>
-                </div>
-
-   
-                <div className="mb-6">
-                  <h3 className="text-lg font-bold text-gray-900 mb-3">Description</h3>
-                  <p className="text-gray-600 leading-relaxed">{car.description}</p>
-                </div>
-
-           
-                <div className="mb-6">
-                  <h3 className="text-lg font-bold text-gray-900 mb-3">Key Features</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    {car.features.map((feature, index) => (
-                      <div key={index} className="flex items-center space-x-2">
-                        <CheckCircle className="h-5 w-5 text-green-500" />
-                        <span className="text-gray-700">{feature}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-3">Specifications</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="flex justify-between py-2 border-b">
-                      <span className="text-gray-600">Engine</span>
-                      <span className="font-semibold text-gray-900">{car.specs.engine}</span>
-                    </div>
-                    <div className="flex justify-between py-2 border-b">
-                      <span className="text-gray-600">Power</span>
-                      <span className="font-semibold text-gray-900">{car.specs.power}</span>
-                    </div>
-                    <div className="flex justify-between py-2 border-b">
-                      <span className="text-gray-600">Seating</span>
-                      <span className="font-semibold text-gray-900">{car.specs.seating}</span>
-                    </div>
-                    <div className="flex justify-between py-2 border-b">
-                      <span className="text-gray-600">Boot Space</span>
-                      <span className="font-semibold text-gray-900">{car.specs.bootSpace}</span>
-                    </div>
-                  </div>
-                </div>
+                <div className="text-3xl font-bold mb-6">{price}</div>
+                <p className="text-gray-700">{car.description}</p>
               </CardContent>
             </Card>
 
-            {car.warranty && (
-              <Card className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
-                <CardContent className="p-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="bg-green-500 p-3 rounded-full">
-                      <Award className="h-6 w-6 text-white" />
+            {/* Specs */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Car Specifications</CardTitle>
+              </CardHeader>
+              <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <Spec icon={<Fuel />} label="Fuel" value={car.fuelType} />
+                <Spec icon={<Settings />} label="Transmission" value={car.transmission} />
+                <Spec icon={<Gauge />} label="KM Driven" value={car.kmDriven.toLocaleString()} />
+                <Spec icon={<Users />} label="Ownership" value={car.ownership} />
+              </CardContent>
+            </Card>
+
+            {/* Features */}
+            {car.features?.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Features</CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {car.features.map((f, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-green-500" />
+                      <span>{f}</span>
                     </div>
-                    <div>
-                      <h3 className="text-lg font-bold text-gray-900 mb-2">Warranty Included</h3>
-                      <p className="text-gray-700">{car.warranty}</p>
-                    </div>
-                  </div>
+                  ))}
                 </CardContent>
               </Card>
             )}
           </div>
 
-   
+          {/* RIGHT */}
           <div className="space-y-6">
+            {/* Seller Info */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Seller Information</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="font-semibold">{car.seller?.name}</p>
+                <p className="text-sm text-gray-500">{car.seller?.contact}</p>
+              </CardContent>
+            </Card>
 
+            {/* Contact Form */}
             <Card>
               <CardHeader>
                 <CardTitle>Contact Seller</CardTitle>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div>
-                    <Input
-                      placeholder="Your Name"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Input
-                      type="tel"
-                      placeholder="Phone Number"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Input
-                      type="email"
-                      placeholder="Email Address"
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Textarea
-                      placeholder="Message"
-                      value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      rows={4}
-                      required
-                    />
-                  </div>
-                  <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800">
-                    <Mail className="h-4 w-4 mr-2" />
-                    Send Inquiry
-                  </Button>
-                  <Button type="button" variant="outline" className="w-full">
-                    <Phone className="h-4 w-4 mr-2" />
-                    Call Seller
+                <form onSubmit={handleContactSubmit} className="space-y-4">
+                  <Input
+                    placeholder="Your Name"
+                    value={contactForm.name}
+                    onChange={(e) =>
+                      setContactForm({ ...contactForm, name: e.target.value })
+                    }
+                    required
+                  />
+                  <Input
+                    placeholder="Phone Number"
+                    value={contactForm.phone}
+                    onChange={(e) =>
+                      setContactForm({ ...contactForm, phone: e.target.value })
+                    }
+                    required
+                  />
+                  <Textarea
+                    placeholder="Message"
+                    value={contactForm.message}
+                    onChange={(e) =>
+                      setContactForm({ ...contactForm, message: e.target.value })
+                    }
+                  />
+                  <Button type="submit" className="w-full">
+                    Send Message
                   </Button>
                 </form>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Why Buy from Us?</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-start space-x-3">
-                  <Shield className="h-5 w-5 text-blue-600 mt-1" />
-                  <div>
-                    <div className="font-semibold text-gray-900">200+ Quality Checks</div>
-                    <div className="text-sm text-gray-600">Every car thoroughly inspected</div>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <Award className="h-5 w-5 text-blue-600 mt-1" />
-                  <div>
-                    <div className="font-semibold text-gray-900">Comprehensive Warranty</div>
-                    <div className="text-sm text-gray-600">Extended warranty available</div>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <CheckCircle className="h-5 w-5 text-blue-600 mt-1" />
-                  <div>
-                    <div className="font-semibold text-gray-900">Easy Financing</div>
-                    <div className="text-sm text-gray-600">Best loan rates available</div>
-                  </div>
-                </div>
               </CardContent>
             </Card>
           </div>
         </div>
 
+        {/* RELATED CARS */}
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold mb-6">Related Cars</h2>
 
-        {relatedCars.length > 0 && (
-          <div className="mt-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Similar Cars You May Like</h2>
+          {relatedCars.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {relatedCars.map((car) => (
-                <CarCard key={car.id} car={car} />
+              {relatedCars.map((c) => (
+                <CarCard key={c._id} car={c} />
               ))}
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="text-center py-10 text-gray-500">
+              🚗 No related cars yet. New cars coming soon!
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 };
+
+/* ---------- SMALL COMPONENTS ---------- */
+
+const Spec = ({ icon, label, value }) => (
+  <div className="bg-gray-100 p-4 rounded text-center">
+    <div className="mx-auto mb-2 text-blue-600">{icon}</div>
+    <div className="text-sm text-gray-500">{label}</div>
+    <div className="font-semibold">{value}</div>
+  </div>
+);
 
 export default CarDetails;

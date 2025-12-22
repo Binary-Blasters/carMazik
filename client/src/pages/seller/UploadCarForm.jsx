@@ -14,6 +14,9 @@ import CarmazikAlert from "../../components/ui/CarmazikAlert";
 
 const STORAGE_KEY = "carUploadDraft";
 
+/* ======================================================
+   MAIN COMPONENT
+====================================================== */
 const UploadCarForm = () => {
   const [step, setStep] = useState(1);
   const [uploading, setUploading] = useState(false);
@@ -22,274 +25,224 @@ const UploadCarForm = () => {
   const [showDraftModal, setShowDraftModal] = useState(false);
 
   const [formData, setFormData] = useState({
+    /* STEP 1 */
     title: "",
     brand: "",
     model: "",
-    year: "",
     variant: "",
     bodyType: "",
-    price: "",
-    negotiable: false,
-    fuelType: "",
-    transmission: "",
+
+    /* STEP 2 */
+    year: "",
     kmDriven: "",
     ownership: "",
-    color: "",
-    mileage: "",
-    seatingCapacity: "",
     location: "",
+
+    /* STEP 3 */
+    fuelType: "",
+    transmission: "",
+
+    /* STEP 4 – DYNAMIC */
     engine: { capacity: "", power: "", torque: "" },
-    description: "",
+    electric: { range: "", batteryCapacity: "", chargingTime: "" },
+    cng: { tankCapacity: "" },
+    mileage: "",
+
+    /* STEP 5 */
+    price: "",
+    negotiable: false,
+
+    /* STEP 6 */
     features: [],
+    description: "",
+
+    /* STEP 7 */
     images: [],
   });
 
   const progress = (step / 7) * 100;
 
- 
+  /* ======================================================
+     DRAFT AUTO SAVE
+  ====================================================== */
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      const hasData =
-        parsed &&
-        parsed.formData &&
-        Object.values(parsed.formData).some(
-          (val) =>
-            (typeof val === "string" && val.trim() !== "") ||
-            (Array.isArray(val) && val.length > 0) ||
-            (typeof val === "object" &&
-              Object.values(val).some((v) => v && v.toString().trim() !== ""))
-        );
-      if (hasData) setShowDraftModal(true);
-    }
+    if (saved) setShowDraftModal(true);
   }, []);
 
-  
   useEffect(() => {
-    const hasData = Object.values(formData).some(
-      (val) =>
-        (typeof val === "string" && val.trim() !== "") ||
-        (Array.isArray(val) && val.length > 0) ||
-        (typeof val === "object" &&
-          Object.values(val).some((v) => v && v.toString().trim() !== ""))
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ formData, step, previewImages })
     );
-    if (hasData || previewImages.length > 0) {
-      const dataToSave = { formData, step, previewImages };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
-    }
   }, [formData, step, previewImages]);
 
- 
   const restoreDraft = () => {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (saved) {
-      const parsed = JSON.parse(saved);
-      setFormData(parsed.formData || {});
-      setStep(parsed.step || 1);
-      setPreviewImages(parsed.previewImages || []);
-      setAlert({
-        type: "info",
-        title: "Draft Restored",
-        message: "✅ Your saved progress has been restored.",
-      });
+      setFormData(saved.formData);
+      setStep(saved.step);
+      setPreviewImages(saved.previewImages || []);
     }
     setShowDraftModal(false);
   };
 
   const clearDraft = () => {
     localStorage.removeItem(STORAGE_KEY);
-    setFormData({
-      title: "",
-      brand: "",
-      model: "",
-      year: "",
-      variant: "",
-      bodyType: "",
-      price: "",
-      negotiable: false,
-      fuelType: "",
-      transmission: "",
-      kmDriven: "",
-      ownership: "",
-      color: "",
-      mileage: "",
-      seatingCapacity: "",
-      location: "",
-      engine: { capacity: "", power: "", torque: "" },
-      description: "",
-      features: [],
-      images: [],
-    });
-    setPreviewImages([]);
-    setStep(1);
-    setShowDraftModal(false);
+    window.location.reload();
   };
 
-  
+  /* ======================================================
+     HANDLERS
+  ====================================================== */
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+    setFormData((p) => ({ ...p, [name]: type === "checkbox" ? checked : value }));
   };
 
   const handleEngineChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      engine: { ...prev.engine, [name]: value },
+    setFormData((p) => ({
+      ...p,
+      engine: { ...p.engine, [name]: value },
     }));
   };
 
-  const handleFeatureToggle = (feature) => {
-    setFormData((prev) => {
-      const exists = prev.features.includes(feature);
-      return {
-        ...prev,
-        features: exists
-          ? prev.features.filter((f) => f !== feature)
-          : [...prev.features, feature],
-      };
-    });
+  const handleElectricChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((p) => ({
+      ...p,
+      electric: { ...p.electric, [name]: value },
+    }));
+  };
+
+  const handleCngChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((p) => ({
+      ...p,
+      cng: { ...p.cng, [name]: value },
+    }));
+  };
+
+  const toggleFeature = (feature) => {
+    setFormData((p) => ({
+      ...p,
+      features: p.features.includes(feature)
+        ? p.features.filter((f) => f !== feature)
+        : [...p.features, feature],
+    }));
   };
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
-    const valid = files.filter((file) => file.type.startsWith("image/"));
-    if (valid.length + previewImages.length > 30) {
-      setAlert({
-        type: "warning",
-        title: "Too many images!",
-        message: "⚠️ You can upload up to 30 images only.",
-      });
-      return;
-    }
-    setFormData((prev) => ({ ...prev, images: [...prev.images, ...valid] }));
-    setPreviewImages((prev) => [
-      ...prev,
-      ...valid.map((f) => URL.createObjectURL(f)),
-    ]);
+    setFormData((p) => ({ ...p, images: [...p.images, ...files] }));
+    setPreviewImages((p) => [...p, ...files.map((f) => URL.createObjectURL(f))]);
   };
 
-  const removeImage = (index) => {
-    setPreviewImages((prev) => prev.filter((_, i) => i !== index));
-    setFormData((prev) => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index),
+  const removeImage = (i) => {
+    setPreviewImages((p) => p.filter((_, idx) => idx !== i));
+    setFormData((p) => ({
+      ...p,
+      images: p.images.filter((_, idx) => idx !== i),
     }));
   };
 
-  const nextStep = () => step < 7 && setStep(step + 1);
-  const prevStep = () => step > 1 && setStep(step - 1);
-
- 
+  /* ======================================================
+     SUBMIT
+  ====================================================== */
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       setUploading(true);
       const data = new FormData();
-      for (const key in formData) {
-        if (key === "engine") data.append("engine", JSON.stringify(formData.engine));
-        else if (key === "features") data.append("features", JSON.stringify(formData.features));
-        else if (key === "images")
-          formData.images.forEach((file) => data.append("images", file));
-        else data.append(key, formData[key]);
-      }
+
+      Object.entries(formData).forEach(([k, v]) => {
+        if (["engine", "electric", "cng", "features"].includes(k)) {
+          data.append(k, JSON.stringify(v));
+        } else if (k === "images") {
+          v.forEach((img) => data.append("images", img));
+        } else {
+          data.append(k, v);
+        }
+      });
 
       await createCar(data);
+      localStorage.removeItem(STORAGE_KEY);
       setAlert({
         type: "success",
-        title: "Car Uploaded!",
-        message: "✅ Your car has been submitted for approval.",
+        title: "Car Uploaded 🚗",
+        message: "Your car has been sent for admin approval.",
       });
-      localStorage.removeItem(STORAGE_KEY);
-      clearDraft();
-    } catch (err) {
+    } catch {
       setAlert({
         type: "error",
         title: "Upload Failed",
-        message: err.response?.data?.message || "❌ Something went wrong.",
+        message: "Something went wrong. Please try again.",
       });
     } finally {
       setUploading(false);
     }
   };
 
+  /* ======================================================
+     UI
+  ====================================================== */
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50 py-10 relative">
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">
-            Upload Your Car 🚗
-          </h1>
-          <p className="text-gray-600 mt-2">Auto-save enabled. Your progress is safe!</p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-orange-50 py-10">
+      <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl p-8">
+        <h1 className="text-3xl font-bold text-center mb-2">
+          Upload Your Car 🚗
+        </h1>
+        <p className="text-center text-gray-500 mb-6">
+          Step {step} of 7
+        </p>
 
-        <div className="bg-white shadow-xl rounded-2xl p-8 border border-gray-100 transition-all hover:shadow-2xl">
-          <Progress value={progress} />
-          <p className="text-center text-gray-500 text-sm mt-2">Step {step} of 7</p>
+        <Progress value={progress} />
 
-          <form onSubmit={handleSubmit} className="space-y-10 mt-6">
-            {renderStep(step, formData, handleChange, handleEngineChange, handleFeatureToggle, handleImageUpload, previewImages, removeImage)}
+        <form onSubmit={handleSubmit} className="mt-8 space-y-8">
+          {renderStep(
+            step,
+            formData,
+            handleChange,
+            handleEngineChange,
+            handleElectricChange,
+            handleCngChange,
+            toggleFeature,
+            handleImageUpload,
+            previewImages,
+            removeImage
+          )}
 
-            <div className="flex flex-col sm:flex-row justify-between pt-6 gap-3">
-              {step > 1 && (
-                <Button
-                  type="button"
-                  onClick={prevStep}
-                  variant="outline"
-                  disabled={uploading}
-                  className="cursor-pointer border-blue-500 text-blue-600 hover:bg-blue-50 flex items-center justify-center gap-2"
-                >
-                  <ArrowLeft className="h-4 w-4" /> Back
-                </Button>
-              )}
-              {step < 7 ? (
-                <Button
-                  type="button"
-                  onClick={nextStep}
-                  className="cursor-pointer ml-auto bg-gradient-to-r from-blue-600 to-orange-500 text-white flex items-center justify-center gap-2 hover:opacity-90"
-                >
-                  Next <ArrowRight className="h-4 w-4" />
-                </Button>
-              ) : (
-                <Button
-                  type="submit"
-                  disabled={uploading}
-                  className="cursor-pointer ml-auto bg-gradient-to-r from-green-600 to-green-500 text-white flex items-center justify-center gap-2 hover:opacity-90"
-                >
-                  {uploading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Check className="h-4 w-4" />
-                  )}
-                  {uploading ? "Uploading..." : "Submit"}
-                </Button>
-              )}
-            </div>
-          </form>
-        </div>
+          <div className="flex justify-between">
+            {step > 1 && (
+              <Button type="button" variant="outline" onClick={() => setStep(step - 1)}>
+                <ArrowLeft className="h-4 w-4 mr-1" /> Back
+              </Button>
+            )}
+
+            {step < 7 ? (
+              <Button type="button" onClick={() => setStep(step + 1)}>
+                Next <ArrowRight className="h-4 w-4 ml-1" />
+              </Button>
+            ) : (
+              <Button type="submit" disabled={uploading}>
+                {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check />}
+                Submit
+              </Button>
+            )}
+          </div>
+        </form>
       </div>
 
       {alert && <CarmazikAlert {...alert} onClose={() => setAlert(null)} />}
 
       {showDraftModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center animate-fadeIn">
-            <h2 className="text-2xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">
-              Resume Draft?
-            </h2>
-            <p className="text-gray-600 mb-6">
-              We found a saved draft from your previous session.
-              <br /> Would you like to continue where you left off?
-            </p>
-            <div className="flex justify-center gap-4">
-              <Button onClick={restoreDraft} className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white">
-                Resume Draft
-              </Button>
-              <Button onClick={clearDraft} variant="outline" className="cursor-pointer border-red-500 text-red-500 hover:bg-red-50">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-xl text-center">
+            <h2 className="font-bold mb-3">Resume Draft?</h2>
+            <div className="flex gap-4 justify-center">
+              <Button onClick={restoreDraft}>Resume</Button>
+              <Button variant="outline" onClick={clearDraft}>
                 Start Fresh
               </Button>
             </div>
@@ -300,137 +253,249 @@ const UploadCarForm = () => {
   );
 };
 
-
-const renderStep = (step, formData, handleChange, handleEngineChange, handleFeatureToggle, handleImageUpload, previewImages, removeImage) => {
+/* ======================================================
+   STEPS
+====================================================== */
+const renderStep = (
+  step,
+  formData,
+  handleChange,
+  handleEngineChange,
+  handleElectricChange,
+  handleCngChange,
+  toggleFeature,
+  handleImageUpload,
+  previewImages,
+  removeImage
+) => {
   switch (step) {
+
     case 1:
       return (
-        <StepWrapper title="🧾 Basic Details">
-          <div className="grid sm:grid-cols-2 gap-6">
-            {["title", "brand", "model", "variant"].map((f) => (
-              <FloatInput key={f} name={f} label={f.toUpperCase()} value={formData[f]} onChange={handleChange} />
-            ))}
-            <SelectInput name="bodyType" label="Body Type" value={formData.bodyType} onChange={handleChange} options={["Hatchback", "Sedan", "SUV", "MUV", "Luxury", "Sports", "Convertible"]} />
-          </div>
-        </StepWrapper>
+        <Step title="🚗 Car Identity">
+          <Grid>
+            <Input name="title" label="Title" value={formData.title} onChange={handleChange} />
+            <Input name="brand" label="Brand" value={formData.brand} onChange={handleChange} />
+            <Input name="model" label="Model" value={formData.model} onChange={handleChange} />
+            <Input name="variant" label="Variant" value={formData.variant} onChange={handleChange} />
+            <Select name="bodyType" label="Body Type" value={formData.bodyType} onChange={handleChange}
+              options={["Hatchback", "Sedan", "SUV", "MUV", "Luxury"]} />
+          </Grid>
+        </Step>
       );
 
     case 2:
       return (
-        <StepWrapper title="📅 Registration & Usage">
-          <div className="grid sm:grid-cols-2 gap-6">
-            <FloatInput name="year" label="Manufacture Year" value={formData.year} onChange={handleChange} type="number" />
-            <FloatInput name="kmDriven" label="Kilometers Driven" value={formData.kmDriven} onChange={handleChange} type="number" />
-            <SelectInput name="ownership" label="Ownership" value={formData.ownership} onChange={handleChange} options={["1st Owner", "2nd Owner", "3rd Owner", "4th Owner or More"]} />
-            <FloatInput name="location" label="Location (City, State)" value={formData.location} onChange={handleChange} />
-          </div>
-        </StepWrapper>
+        <Step title="📅 Registration & Usage">
+          <Grid>
+            <Input name="year" label="Manufacture Year" value={formData.year} onChange={handleChange} />
+            <Input name="kmDriven" label="KM Driven" value={formData.kmDriven} onChange={handleChange} />
+            <Select name="ownership" label="Ownership" value={formData.ownership} onChange={handleChange}
+              options={["1st Owner", "2nd Owner", "3rd Owner", "4th Owner+"]} />
+            <Input name="location" label="Location" value={formData.location} onChange={handleChange} />
+          </Grid>
+        </Step>
       );
 
     case 3:
       return (
-        <StepWrapper title="💰 Pricing">
-          <div className="grid sm:grid-cols-2 gap-6">
-            <FloatInput name="price" label="Expected Price (₹)" value={formData.price} onChange={handleChange} type="number" />
-            <label className="flex items-center gap-2 text-sm text-gray-700">
-              <input type="checkbox" name="negotiable" checked={formData.negotiable} onChange={handleChange} className="cursor-pointer accent-blue-600" />
-              Negotiable Price
-            </label>
-          </div>
-        </StepWrapper>
+        <Step title="⛽ Fuel & Transmission">
+          <Grid>
+            <Select name="fuelType" label="Fuel Type" value={formData.fuelType} onChange={handleChange}
+              options={["Petrol", "Diesel", "Electric", "Hybrid", "CNG"]} />
+            <Select name="transmission" label="Transmission" value={formData.transmission} onChange={handleChange}
+              options={["Manual", "Automatic"]} />
+          </Grid>
+        </Step>
       );
 
     case 4:
       return (
-        <StepWrapper title="⚙️ Engine & Performance">
-          <div className="grid sm:grid-cols-2 gap-6">
-            {["capacity", "power", "torque"].map((f) => (
-              <FloatInput key={f} name={f} label={`Engine ${f}`} value={formData.engine[f]} onChange={handleEngineChange} />
-            ))}
-            <SelectInput name="fuelType" label="Fuel Type" value={formData.fuelType} onChange={handleChange} options={["Petrol", "Diesel", "CNG", "Electric", "Hybrid"]} />
-            <SelectInput name="transmission" label="Transmission" value={formData.transmission} onChange={handleChange} options={["Manual", "Automatic"]} />
-          </div>
-        </StepWrapper>
+        <Step title="⚙️ Performance">
+          {["Petrol", "Diesel"].includes(formData.fuelType) && (
+            <Grid>
+              <Input name="capacity" label="Engine Capacity (cc)" value={formData.engine.capacity} onChange={handleEngineChange} />
+              <Input name="power" label="Power (bhp)" value={formData.engine.power} onChange={handleEngineChange} />
+              <Input name="torque" label="Torque (Nm)" value={formData.engine.torque} onChange={handleEngineChange} />
+              <Input name="mileage" label="Mileage (km/l)" value={formData.mileage} onChange={handleChange} />
+            </Grid>
+          )}
+
+          {formData.fuelType === "Electric" && (
+            <Grid>
+              <Input name="range" label="Range (km)" value={formData.electric.range} onChange={handleElectricChange} />
+              <Input name="batteryCapacity" label="Battery Capacity (kWh)" value={formData.electric.batteryCapacity} onChange={handleElectricChange} />
+              <Input name="chargingTime" label="Charging Time (hrs)" value={formData.electric.chargingTime} onChange={handleElectricChange} />
+            </Grid>
+          )}
+
+          {formData.fuelType === "Hybrid" && (
+            <Grid>
+              <Input name="capacity" label="Engine Capacity (cc)" value={formData.engine.capacity} onChange={handleEngineChange} />
+              <Input name="range" label="Electric Range (km)" value={formData.electric.range} onChange={handleElectricChange} />
+            </Grid>
+          )}
+
+          {formData.fuelType === "CNG" && (
+            <Grid>
+              <Input name="capacity" label="Engine Capacity (cc)" value={formData.engine.capacity} onChange={handleEngineChange} />
+              <Input name="tankCapacity" label="CNG Tank Capacity (kg)" value={formData.cng.tankCapacity} onChange={handleCngChange} />
+            </Grid>
+          )}
+        </Step>
       );
 
     case 5:
       return (
-        <StepWrapper title="✨ Features">
-          <div className="grid sm:grid-cols-2 gap-4">
-            {["Air Conditioning", "Power Steering", "ABS", "Sunroof", "Cruise Control", "Rear Camera", "Touchscreen", "Alloy Wheels"].map((feature) => (
-              <label key={feature} className="flex items-center gap-2 text-sm text-gray-700">
-                <input type="checkbox" checked={formData.features.includes(feature)} onChange={() => handleFeatureToggle(feature)} className="cursor-pointer accent-blue-600" />
-                {feature}
-              </label>
-            ))}
-          </div>
-        </StepWrapper>
+        <Step title="💰 Pricing">
+          <Grid>
+            <Input name="price" label="Expected Price (₹)" value={formData.price} onChange={handleChange} />
+            <label className="flex gap-2 items-center">
+              <input type="checkbox" name="negotiable" checked={formData.negotiable} onChange={handleChange} />
+              Negotiable
+            </label>
+          </Grid>
+        </Step>
       );
 
     case 6:
       return (
-        <StepWrapper title="🛋️ Interior & Description">
-          <div className="grid sm:grid-cols-2 gap-6">
-            <FloatInput name="color" label="Exterior Color" value={formData.color} onChange={handleChange} />
-            <FloatInput name="mileage" label="Mileage / Range" value={formData.mileage} onChange={handleChange} />
-            <FloatInput name="seatingCapacity" label="Seating Capacity" value={formData.seatingCapacity} onChange={handleChange} />
+        <Step title="✨ Features & Description">
+          <div className="grid grid-cols-2 gap-3">
+            {["ABS", "Airbags", "Sunroof", "Touchscreen", "Alloy Wheels"].map((f) => (
+              <label key={f} className="flex gap-2">
+                <input type="checkbox" checked={formData.features.includes(f)} onChange={() => toggleFeature(f)} />
+                {f}
+              </label>
+            ))}
           </div>
-          <textarea name="description" value={formData.description} onChange={handleChange} placeholder="Describe your car (condition, extras, etc.)" rows="4" className="border mt-4 p-3 w-full rounded-md focus:ring-2 focus:ring-blue-400 outline-none" />
-        </StepWrapper>
+          <textarea
+            name="description"
+            placeholder="Describe your car condition..."
+            value={formData.description}
+            onChange={handleChange}
+            className="w-full border p-3 rounded mt-4"
+            rows={4}
+          />
+        </Step>
       );
 
     case 7:
-      return (
-        <StepWrapper title="📸 Upload Images">
-          <div onClick={() => document.getElementById("carImages").click()} className="cursor-pointer flex flex-col items-center justify-center p-6 border-2 border-dashed border-blue-400 rounded-lg bg-blue-50 hover:bg-blue-100 transition">
-            <ImageIcon className="h-10 w-10 text-blue-500 mb-2" />
-            <p className="text-gray-700 font-medium">Click or Drag to Upload Images</p>
-            <p className="text-xs text-gray-500">(Max 30 images)</p>
-            <input id="carImages" type="file" multiple accept="image/*" onChange={handleImageUpload} className="hidden" />
-          </div>
-          {previewImages.length > 0 && (
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 mt-6">
-              {previewImages.map((img, idx) => (
-                <div key={idx} className="relative group border rounded-lg overflow-hidden">
-                  <img src={img} alt="preview" className="w-full h-24 sm:h-28 object-cover" />
-                  <button type="button" onClick={() => removeImage(idx)} className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition">
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
+  return (
+    <Step title="📸 Upload Car Photos">
+      {/* Upload Box */}
+      <div
+        onClick={() => document.getElementById("carImages").click()}
+        className="cursor-pointer flex flex-col items-center justify-center p-8 border-2 border-dashed border-blue-400 rounded-xl bg-blue-50 hover:bg-blue-100 transition"
+      >
+        <ImageIcon className="h-12 w-12 text-blue-500 mb-3" />
+        <p className="text-lg font-semibold text-gray-700">
+          Click or Drag & Drop Images
+        </p>
+        <p className="text-sm text-gray-500 mt-1">
+          JPG / PNG • Max 30 images
+        </p>
+
+        <input
+          id="carImages"
+          type="file"
+          multiple
+          accept="image/*"
+          onChange={handleImageUpload}
+          className="hidden"
+        />
+      </div>
+
+      {/* Image Count */}
+      {previewImages.length > 0 && (
+        <p className="text-sm text-gray-500 mt-3">
+          {previewImages.length} / 30 images uploaded
+        </p>
+      )}
+
+      {/* Preview Grid */}
+      {previewImages.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-6">
+          {previewImages.map((img, i) => (
+            <div
+              key={i}
+              className="relative group rounded-lg overflow-hidden border shadow-sm"
+            >
+              {/* Image */}
+              <img
+                src={img}
+                alt="preview"
+                className="w-full h-32 object-cover transition-transform group-hover:scale-105"
+              />
+
+              {/* Primary Badge */}
+              {i === 0 && (
+                <span className="absolute top-2 left-2 bg-green-600 text-white text-xs px-2 py-0.5 rounded">
+                  Primary
+                </span>
+              )}
+
+              {/* Remove Button */}
+              <button
+                type="button"
+                onClick={() => removeImage(i)}
+                className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
             </div>
-          )}
-        </StepWrapper>
-      );
+          ))}
+        </div>
+      )}
+
+      {/* Helper Text */}
+      <div className="mt-4 text-sm text-gray-600">
+        <ul className="list-disc ml-5 space-y-1">
+          <li>First image will be shown as main cover</li>
+          <li>Add clear exterior & interior shots</li>
+          <li>Avoid blurry or dark photos</li>
+        </ul>
+      </div>
+    </Step>
+  );
+
+
     default:
       return null;
   }
 };
 
-const StepWrapper = ({ title, children }) => (
-  <div className="p-6 bg-gradient-to-r from-gray-50 to-white border rounded-xl shadow-sm hover:shadow-md transition-all">
-    <h3 className="text-lg font-semibold text-gray-800 mb-4">{title}</h3>
+/* ======================================================
+   SMALL UI COMPONENTS
+====================================================== */
+const Step = ({ title, children }) => (
+  <div>
+    <h2 className="text-xl font-semibold mb-4">{title}</h2>
     {children}
   </div>
 );
 
-const FloatInput = ({ label, name, value, onChange, type = "text" }) => (
-  <div className="relative">
-    <input
-      id={name} name={name} type={type} value={value} onChange={onChange} className="peer border border-gray-300 rounded-md w-full p-3 pt-6 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all" placeholder=" " /> <label htmlFor={name} className="absolute text-gray-500 text-sm left-3 top-2.5 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-gray-400 peer-focus:top-2.5 peer-focus:text-blue-500"> {label} </label>
+const Grid = ({ children }) => (
+  <div className="grid sm:grid-cols-2 gap-4">{children}</div>
+);
 
-  </div>
-);const SelectInput = ({ label, name, value, onChange, options }) => (
-
+const Input = ({ label, ...props }) => (
   <div>
-    <label className="block text-sm font-medium text-gray-600 mb-1">{label}</label>
-    <select id={name} name={name} value={value} onChange={onChange} className="cursor-pointer border border-gray-300 rounded-md w-full p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400">
-      <option value="">Select {label}</option>
-      {options.map((opt) => (
-        <option key={opt} value={opt}>
-          {opt}
-        </option>
+    <label className="text-sm text-gray-600">{label}</label>
+    <input {...props} className="w-full border p-2 rounded" />
+  </div>
+);
+
+const Select = ({ label, options, ...props }) => (
+  <div>
+    <label className="text-sm text-gray-600">{label}</label>
+    <select {...props} className="w-full border p-2 rounded">
+      <option value="">Select</option>
+      {options.map((o) => (
+        <option key={o}>{o}</option>
       ))}
     </select>
   </div>
-);export default UploadCarForm;
+);
+
+export default UploadCarForm;

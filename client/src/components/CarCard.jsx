@@ -65,7 +65,7 @@ const CarCard = ({ car = {}, onViewDetails }) => {
       ? `${BASE_IMAGE_URL}${car.image}`
       : car.img
       ? `${BASE_IMAGE_URL}${car.img}`
-      : "/car-placeholder.png"; // ✅ LOCAL PLACEHOLDER
+      : "/car-placeholder.png"; 
 
   /* ---------------- DATA ---------------- */
 

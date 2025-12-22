@@ -1,60 +1,70 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Loader2, CarFront } from "lucide-react";
+
 import { Button } from "../ui/button";
-import { getLatestCars } from "../../api/car";
-import TempCarCard from "./TempCarCard";
+import { getElectricCars } from "../../api/car";
 import CarmazikAlert from "../ui/CarmazikAlert";
 import CarCard from "../CarCard";
 
-const LatestCarsSection = () => {
-  const [latestCars, setLatestCars] = useState([]);
+const ElectricCarSection = () => {
+  const [electricCars, setElectricCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState(null);
 
-  useEffect(() => {
-    const fetchLatestCars = async () => {
-      try {
-        const res = await getLatestCars();
-        
-        const cars = res?.data || [];
+  /* ---------------- FETCH ELECTRIC CARS ---------------- */
 
-       
-        const sortedCars = cars
+  useEffect(() => {
+    const fetchElectricCars = async () => {
+      try {
+        setLoading(true);
+
+        const res = await getElectricCars();
+        const cars = res?.data || [];
+        
+        
+
+        // Latest 4 electric cars (safe sort)
+        const latestElectricCars = cars
           .filter((car) => car.createdAt)
           .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
           .slice(0, 4);
 
-        setLatestCars(sortedCars);
+        setElectricCars(latestElectricCars);
       } catch (error) {
-        console.error("❌ Error fetching latest cars:", error);
+        console.error("❌ Error fetching electric cars:", error);
         setAlert({
           type: "error",
           title: "Failed to Load Cars",
           message:
             error.response?.data?.message ||
-            "Something went wrong while fetching latest cars.",
+            "Something went wrong while fetching electric cars.",
         });
       } finally {
         setLoading(false);
       }
     };
 
-    fetchLatestCars();
+    fetchElectricCars(); // ✅ correct function call
   }, []);
+
+  /* ---------------- UI ---------------- */
 
   return (
     <section className="py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-     
+        {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-              Latest Cars
+              Electric Cars
             </h2>
-            <p className="text-gray-600">Recently added and trending cars</p>
+            <p className="text-gray-600">
+              Top electric vehicles available
+            </p>
           </div>
-          <Link to="/listings?category=latest">
+
+          <Link to="/listings?category=electric">
             <Button variant="outline" className="group">
               View All
               <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -62,33 +72,39 @@ const LatestCarsSection = () => {
           </Link>
         </div>
 
-       
+        {/* Content */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-12 text-gray-500">
             <Loader2 className="h-8 w-8 text-blue-600 animate-spin mb-2" />
-            <p>Fetching the latest cars...</p>
+            <p>Fetching electric cars...</p>
           </div>
-        ) : latestCars.length === 0 ? (
+        ) : electricCars.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-gray-500">
             <CarFront className="h-16 w-16 text-gray-400 mb-3" />
-            <p className="text-lg font-medium">No latest cars found!</p>
+            <p className="text-lg font-medium">
+              No electric cars found!
+            </p>
             <p className="text-sm text-gray-400">
               Check back later for newly added cars.
             </p>
           </div>
         ) : (
-          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {latestCars.map((car) => (
+            {electricCars.map((car) => (
               <CarCard key={car._id} car={car} />
             ))}
           </div>
         )}
       </div>
 
-      {alert && <CarmazikAlert {...alert} onClose={() => setAlert(null)} />}
+      {alert && (
+        <CarmazikAlert
+          {...alert}
+          onClose={() => setAlert(null)}
+        />
+      )}
     </section>
   );
 };
 
-export default LatestCarsSection;
+export default ElectricCarSection;

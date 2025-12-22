@@ -243,8 +243,10 @@ export const adminController = {
     const approvedCar = await Car.findByIdAndUpdate(
       car_id,
       { status: "approved" },
-      { new: true }
+      { new: true, runValidators: true }
     );
+    console.log(approvedCar);
+    
     if (!approvedCar) {
       throw new ApiError(404, "Car not found");
     }

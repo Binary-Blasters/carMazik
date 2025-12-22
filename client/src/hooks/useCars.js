@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getCars, searchCars } from "../api/listing";
+import { getCars } from "../api/listing";
 
 const LIMIT = 9;
 
@@ -13,34 +13,36 @@ export const useCars = ({ searchParams, filters, sortBy, page }) => {
       try {
         setLoading(true);
 
-        const searchQuery = searchParams.get("search");
-
-        // 🔁 CASE 1: SEARCH
-        if (searchQuery) {
-          const cars = await searchCars(searchQuery);
-          setCars(cars);
-          setTotal(cars.length);
-          return;
-        }
-
-        // 🔁 CASE 2: NORMAL LISTING
         const params = {
+          
+          search: searchParams.get("search") || undefined,
+          category: searchParams.get("category") || undefined,
+
+         
           brand: filters.brand || undefined,
           fuelType: filters.fuelType || undefined,
           transmission: filters.transmission || undefined,
           minPrice: filters.minPrice || undefined,
           maxPrice: filters.maxPrice || undefined,
+
+          
           sortBy: sortBy || undefined,
+
+         
           page,
           limit: LIMIT,
         };
 
         const res = await getCars(params);
+        console.log(res);
+        
 
-        setCars(res.cars);
-        setTotal(res.total);
+        setCars(res.cars || []);
+        setTotal(res.total || 0);
       } catch (err) {
         console.error("❌ Failed to fetch cars", err);
+        setCars([]);
+        setTotal(0);
       } finally {
         setLoading(false);
       }

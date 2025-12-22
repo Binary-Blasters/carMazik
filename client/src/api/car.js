@@ -7,10 +7,7 @@ export const createCar = async (carData) => {
   return response.data;
 };
 
-export const getCarById = async (id) => {
-  const response = await axios.get(`${API_URL}/cars/${id}`,{withCredentials: true});
-  return response.data;
-}
+
 
 export const getSellerPendingCars = async () => {
   const response = await axios.get(`${API_URL}/cars/seller/pending`,{withCredentials: true});
@@ -35,4 +32,37 @@ export const getLatestCars = async () => {
 export const getCarByCategory = async (category) => {
   const response = await axios.get(`${API_URL}/cars?category=${category}`,{withCredentials: true});
   return response.data;
+}
+
+export const getElectricCars = async () => {
+  const response = await axios.get(`${API_URL}/cars/electric`,{withCredentials: true});
+  return response.data;
+}
+
+export const getCarById = async (id) => {
+  const res = await axios.get(`${API_URL}/cars/${id}`,{withCredentials: true});
+  return res.data.data;
+};
+
+export const getRelatedCars = async ({ fuelType, brand, excludeId }) => {
+  const res = await axios.get(`${API_URL}/cars`, {
+    params: {
+      fuelType,
+      brand,
+      limit: 4,
+    },
+    withCredentials: true,
+  });
+
+  return (res.data.data.cars || []).filter(
+    (car) => car._id !== excludeId
+  );
+};
+
+export const getCars = async (filters = {}) => {
+  const res = await axios.get(`${API_URL}/cars`, {
+    params: filters,
+    withCredentials: true,
+  });
+  return res.data.data;
 }

@@ -16,6 +16,7 @@ import CarmazikAlert from "../components/ui/CarmazikAlert"
 import {getLatestCars} from "../api/car"
 import LoadingScreen from "../components/ui/LoadingScreen";
 import LatestCarsSection from "../components/cars/LatestCarsSection";
+import ElectricCarSection from "../components/cars/ElectricCarSection";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -296,28 +297,7 @@ const Home = () => {
 
       {/* Electric Cars */}
       <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-                Electric Cars
-              </h2>
-              <p className="text-gray-600">Top electric vehicles available</p>
-            </div>
-            <Link to="/listings?category=electric">
-              <Button variant="outline" className="group">
-                View All
-                <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {electricCarsToShow.map((car) => (
-              <CarCard key={car.id} car={car} />
-            ))}
-          </div>
-        </div>
+        <ElectricCarSection/>
       </section>
 
       {/* Upcoming Cars */}

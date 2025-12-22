@@ -13,7 +13,7 @@ export default function PendingCars() {
     try {
       setLoading(true);
       const res = await adminService.getPendingCars();
-      console.log(res.data.data.cars);
+    
       
       setCars(res.data.data.cars);
     } catch (error) {
@@ -32,6 +32,8 @@ export default function PendingCars() {
 
   const handleApprove = async (carId) => {
     try {
+      
+      
       await adminService.approveCar(carId);
       setCars((prev) => prev.filter((c) => c._id !== carId));
       setAlert({

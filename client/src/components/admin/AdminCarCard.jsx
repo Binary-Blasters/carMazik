@@ -1,10 +1,20 @@
 import React from "react";
 
 export default function AdminCarCard({ car, onApprove, onReject }) {
+
+  const BASE_IMAGE_URL = import.meta.env.VITE_IMAGE_URL || "";
+   const imageSrc =
+    car?.images?.length > 0
+      ? `${BASE_IMAGE_URL}${car.images[0]}`
+      : car.image
+      ? `${BASE_IMAGE_URL}${car.image}`
+      : car.img
+      ? `${BASE_IMAGE_URL}${car.img}`
+      : "/car-placeholder.png"; 
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden">
       <img
-        src={`https://via.placeholder.com/400x250?text=${car.model}`}
+        src={imageSrc}
         alt={car.model}
         className="h-40 w-full object-cover"
       />
