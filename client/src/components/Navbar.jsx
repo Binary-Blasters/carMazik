@@ -8,7 +8,6 @@ import {
   Heart,
   Car,
   ChevronDown,
-  LogOut,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -21,19 +20,11 @@ const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showLogin, setShowLogin] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
   const userMenuRef = useRef(null);
-
-  const newRef = useRef(null);
-  const usedRef = useRef(null);
-  const categoriesRef = useRef(null);
-  const newsRef = useRef(null);
-  const servicesRef = useRef(null);
 
   const { token } = useSelector((state) => state.auth);
   const isLoggedIn = Boolean(token);
@@ -103,12 +94,12 @@ const Navbar = () => {
                 />
                 {userMenuOpen && (
                   <div className="absolute right-0 mt-3 w-44 bg-white rounded shadow border">
-                    <button
-                      onClick={() => navigate("/dashboard")}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                    <Link
+                      to="/dashboard"
+                      className="block px-4 py-2 hover:bg-gray-100"
                     >
                       Dashboard
-                    </button>
+                    </Link>
                     <button
                       onClick={() => dispatch(logout())}
                       className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50"
@@ -139,35 +130,52 @@ const Navbar = () => {
 
             <NavItem
               label="NEW CARS"
-              items={["Featured Car", "Latest Car", "Electric Car", "Upcoming Car"]}
+              items={[
+                { label: "Featured Car", path: "/new/featured" },
+                { label: "Latest Car", path: "/new/latest" },
+                { label: "Electric Car", path: "/new/electric" },
+                { label: "Upcoming Car", path: "/new/upcoming" },
+              ]}
             />
 
             <NavItem
               label="USED CARS"
-              items={["Buy Used Cars", "Sell Your Car", "Used car in your city"]}
+              items={[
+                { label: "Buy Used Cars", path: "/used/buy" },
+                { label: "Sell Your Car", path: "/used/sell" },
+                { label: "Used car in your city", path: "/used/city" },
+              ]}
             />
 
             <NavItem
               label="CATEGORIES"
               items={[
-                "Hatchback",
-                "Sedan",
-                "SUV",
-                "MUV / MPV",
-                "Luxury Cars",
-                "Electric Vehicles",
-                "Hybrid Cars",
+                { label: "Hatchback", path: "/category/hatchback" },
+                { label: "Sedan", path: "/category/sedan" },
+                { label: "SUV", path: "/category/suv" },
+                { label: "MUV / MPV", path: "/category/muv-mpv" },
+                { label: "Luxury Cars", path: "/category/luxury" },
+                { label: "Electric Vehicles", path: "/category/electric" },
+                { label: "Hybrid Cars", path: "/category/hybrid" },
               ]}
             />
 
             <NavItem
               label="SERVICES"
-              items={["Spare parts", "Car washing", "Buy / Sell Assistance"]}
+              items={[
+                { label: "Spare parts", path: "/services/spare-parts" },
+                { label: "Car washing", path: "/services/car-wash" },
+                { label: "Buy / Sell Assistance", path: "/services/assistance" },
+              ]}
             />
 
             <NavItem
               label="NEWS & REVIEWS"
-              items={["Car news", "User reviews", "Expert Reviews"]}
+              items={[
+                { label: "Car news", path: "/news" },
+                { label: "User reviews", path: "/reviews/users" },
+                { label: "Expert Reviews", path: "/reviews/experts" },
+              ]}
             />
 
           </nav>
@@ -186,15 +194,15 @@ function NavItem({ label, items }) {
         {label} <ChevronDown className="w-4 h-4" />
       </button>
 
-      {/* 👇 WIDTH FIX HERE */}
       <div className="absolute left-0 top-full hidden group-hover:block bg-white rounded-md shadow-md border z-50 min-w-[180px] py-1">
         {items.map((item) => (
-          <button
-            key={item}
+          <Link
+            key={item.label}
+            to={item.path}
             className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-50 hover:text-blue-600 whitespace-nowrap"
           >
-            {item}
-          </button>
+            {item.label}
+          </Link>
         ))}
       </div>
     </div>
