@@ -8,7 +8,7 @@ import {
   TrendingUp,
   ArrowRight,
 } from "lucide-react";
-import { Button } from "../components/ui/button";
+import { Button } from "../components/ui/Button";
 import CarCard from "../components/CarCard";
 import { mockCars, brands, budgetRanges } from "../mockData";
 import HeroSection from "../components/HeroSection";

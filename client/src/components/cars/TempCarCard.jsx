@@ -10,7 +10,7 @@ import {
   Zap,
 } from "lucide-react";
 import { Card, CardContent } from "../ui/Card";
-import { Button } from "../ui/button";
+import { Button } from "../ui/Button";
 import { Badge } from "../ui/Badge";
 
 const BASE_IMAGE_URL = import.meta.env.VITE_IMAGE_URL || "";

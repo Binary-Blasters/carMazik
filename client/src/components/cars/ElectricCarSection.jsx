@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Loader2, CarFront } from "lucide-react";
 
-import { Button } from "../ui/button";
+import { Button } from "../ui/Button";
 import { getElectricCars } from "../../api/car";
 import CarmazikAlert from "../ui/CarmazikAlert";
 import CarCard from "../CarCard";

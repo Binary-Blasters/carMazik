@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { adminService } from "../../api/admin";
 import AdminCarCard from "../../components/admin/AdminCarCard";
 import LoadingScreen from "../../components/ui/LoadingScreen";
-import CarMazikAlert from "../../components/ui/CarMazikAlert";
+import CarMazikAlert from "../../components/ui/CarmazikAlert";
 
 export default function PendingCars() {
   const [cars, setCars] = useState([]);

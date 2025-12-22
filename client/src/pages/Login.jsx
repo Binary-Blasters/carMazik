@@ -1,6 +1,6 @@
 import React from "react";
 import { X } from "lucide-react";
-import { Button } from "../components/ui/button";
+import { Button } from "../components/ui/Button";
 import { login } from "../api/auth";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";

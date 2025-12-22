@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { X, ArrowLeft, ArrowRight, UserPlus } from "lucide-react";
-import { Button } from "../components/ui/button";
+import { Button } from "../components/ui/Button";
 import { register } from "../api/auth";
 import { useNavigate } from "react-router-dom";
 
