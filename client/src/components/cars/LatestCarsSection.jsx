@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Loader2, CarFront } from "lucide-react";
-import { Button } from "../ui/button";
+import { Button } from "../ui/Button";
 import { getLatestCars } from "../../api/car";
 import TempCarCard from "./TempCarCard";
 import CarmazikAlert from "../ui/CarmazikAlert";

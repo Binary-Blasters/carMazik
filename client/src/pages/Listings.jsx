@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useCars } from "../hooks/useCars";
 import CarCard from "../components/CarCard";
-import { Button } from "../components/ui/button";
+import { Button } from "../components/ui/Button";
 import LoadingScreen from "../components/ui/LoadingScreen";
 
 const Listings = () => {

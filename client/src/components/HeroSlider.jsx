@@ -5,7 +5,7 @@ import { Autoplay, Pagination, EffectFade } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/effect-fade";
-import { Button } from "./ui/button";
+import { Button } from "./ui/Button";
 import {
   Select,
   SelectContent,

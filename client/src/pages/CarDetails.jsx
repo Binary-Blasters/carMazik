@@ -14,7 +14,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-import { Button } from "../components/ui/button";
+import { Button } from "../components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
 import { Input } from "../components/ui/input";
