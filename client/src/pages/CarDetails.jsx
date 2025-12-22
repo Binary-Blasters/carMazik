@@ -17,7 +17,7 @@ import {
 import { Button } from "../components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card";
 import { Badge } from "../components/ui/Badge";
-import { Input } from "../components/ui/input";
+import { Input } from "../components/ui/Input";
 import { Textarea } from "../components/ui/textarea";
 import LoadingScreen from "../components/ui/LoadingScreen";
 import CarCard from "../components/CarCard";

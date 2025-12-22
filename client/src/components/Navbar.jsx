@@ -11,7 +11,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { Button } from "./ui/Button";
-import { Input } from "./ui/input";
+import { Input } from "./ui/Input";
 import Login from "../pages/Login";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../app/slice/auth.slice";
