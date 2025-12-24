@@ -38,7 +38,9 @@ export const useCars = ({ searchParams, filters, sortBy, page }) => {
         };
 
         
-
+        
+        console.log(params);
+        
         const res = await getCars(params);
 
         setCars(res.cars || []);

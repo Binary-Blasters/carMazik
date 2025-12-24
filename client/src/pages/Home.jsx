@@ -19,6 +19,7 @@ import LatestCarsSection from "../components/cars/LatestCarsSection";
 import ElectricCarSection from "../components/cars/ElectricCarSection";
 import BrowseByCategory from "../components/cars/BrowseByCategory";
 import FeaturedCarsSection from "../components/cars/FeaturedCarsSection";
+import UpcomingCarsSection from "../components/cars/UpcomingCarsSection";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -232,28 +233,7 @@ const Home = () => {
 
       {/* Upcoming Cars */}
       <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-                Upcoming Cars
-              </h2>
-              <p className="text-gray-600">Models launching soon</p>
-            </div>
-            <Link to="/listings?category=upcoming">
-              <Button variant="outline" className="group">
-                View All
-                <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {upcomingCarsToShow.map((car) => (
-              <CarCard key={car.id} car={car} />
-            ))}
-          </div>
-        </div>
+        <UpcomingCarsSection/>
       </section>
 
       {/* Trusted used cars by budget */}

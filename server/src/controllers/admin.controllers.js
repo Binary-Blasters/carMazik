@@ -286,13 +286,13 @@ export const adminController = {
     const limit = Number(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const cars = await Car.find({status: "approved"})
+    const cars = await Car.find({ status: "approved" })
       .populate("seller", "name contact")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
-    const total = await Car.countDocuments({status: "approved"});
+    const total = await Car.countDocuments({ status: "approved" });
 
     return res
       .status(200)
@@ -305,26 +305,28 @@ export const adminController = {
       );
   }),
   toggleFeaturedCar: asyncHandler(async (req, res) => {
-  const { car_id } = req.params;
+    const { car_id } = req.params;
 
-  const car = await Car.findById(car_id);
-  if (!car) throw new ApiError(404, "Car not found");
+    const car = await Car.findById(car_id);
+    if (!car) throw new ApiError(404, "Car not found");
 
-  if (car.status !== "approved") {
-    throw new ApiError(400, "Only approved cars can be featured");
-  }
+    if (car.status !== "approved") {
+      throw new ApiError(400, "Only approved cars can be featured");
+    }
 
-  car.featured = !car.featured;
-  await car.save();
+    car.featured = !car.featured;
+    await car.save();
 
-  return res.status(200).json(
-    new ApiResponse(
-      200,
-      car,
-      car.featured ? "Car marked as featured" : "Car removed from featured"
-    )
-  );
-}),
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          car,
+          car.featured ? "Car marked as featured" : "Car removed from featured"
+        )
+      );
+  }),
 
   getStats: asyncHandler(async (req, res) => {
     const totalUsers = await User.countDocuments({ role: "user" });
@@ -356,4 +358,7 @@ export const adminController = {
       )
     );
   }),
+
+
+  
 };

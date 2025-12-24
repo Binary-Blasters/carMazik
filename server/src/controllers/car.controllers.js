@@ -8,6 +8,7 @@ import { Seller } from "../models/seller.model.js";
 import path from "path";
 import sharp from "sharp";
 import { safeUnlink } from "../utils/safeUnlink.js";
+import { UpcomingCar } from "../models/upcomingCar.model.js";
 
 const carController = {
   uploadCar: asyncHandler(async (req, res) => {
@@ -251,19 +252,33 @@ const carController = {
       } else if (category === "featured") {
         query.featured = true;
         sortOptions.createdAt = -1;
+      } else if (category === "upcoming") {
+        const cars = await UpcomingCar.find({ isActive: true }).sort({
+          expectedLaunchDate: 1,
+        });
+       
+        
+        return res
+          .status(200)
+          .json(
+            new ApiResponse(
+              200,
+              cars,
+              "Upcoming cars fetched successfully"
+            )
+          );
       } else {
         sortOptions.createdAt = -1;
       }
-      
+
       const skip = (page - 1) * limit;
-      
+
       const cars = await Car.find(query)
-      .sort(sortOptions)
-      .skip(skip)
-      .limit(Number(limit))
-      .populate("seller", "name contact");
-      
-      
+        .sort(sortOptions)
+        .skip(skip)
+        .limit(Number(limit))
+        .populate("seller", "name contact");
+
       const total = await Car.countDocuments(query);
 
       res.status(200).json(

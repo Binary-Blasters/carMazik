@@ -125,4 +125,26 @@ export const adminService = {
       withCredentials: true,
     });
   },
+
+  //upcoming cars
+  getUpcomingCars: async () => {
+    return await axios.get(`${BASE_URL}/admin/upcoming-cars`, { withCredentials: true });
+  },
+  addUpcomingCar: async (data) => {
+    return await axios.post(`${BASE_URL}/admin/upcoming-cars`, data, {
+      withCredentials: true,
+    });
+  },
+
+  updateUpcomingCar: async (id, data) => {
+    return await axios.put(`${BASE_URL}/admin/upcoming-cars/${id}`, data, {
+      withCredentials: true,
+    });
+  },
+
+  launchUpcomingCar: async (id) => {
+    return await axios.patch(`${BASE_URL}/admin/upcoming-cars/launch/${id}`, {
+      withCredentials: true,
+    });
+  },
 };

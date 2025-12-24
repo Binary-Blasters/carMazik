@@ -28,6 +28,8 @@ const Listings = () => {
 
   const totalPages = Math.ceil(total / 9);
   const isSearchMode = Boolean(searchParams.get("search"));
+  console.log(cars);
+  
 
   return (
     <div className="max-w-7xl mx-auto p-6">

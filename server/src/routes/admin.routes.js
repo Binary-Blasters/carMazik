@@ -32,4 +32,7 @@ router.route("/cars/featured/:car_id").patch(adminController.toggleFeaturedCar);
 router.route("/cars/approve/:car_id").patch(adminController.approveCar)  //checked
 router.route("/cars/reject/:car_id").patch(adminController.rejectCar) //checked
 
+
+
+
 export default router
