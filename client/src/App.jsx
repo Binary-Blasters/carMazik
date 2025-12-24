@@ -20,6 +20,7 @@ import BlockedUsers from "./pages/admin/BlockedUsers";
 import Wishlist from "./pages/Wishlist";
 import ActiveSellers from "./pages/admin/ActiveSellers";
 import BlockedSellers from "./pages/admin/BlockedSellers";
+import AdminAllCars from "./pages/admin/AdminAllCars";
 
 
 function App() {
@@ -41,6 +42,7 @@ function App() {
 
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<AdminDashboard />} />
+                <Route path="cars" element={<AdminAllCars />} />
                 <Route path="cars/pending" element={<PendingCars />} />
                 <Route path="users" element={<Users />} />
                 <Route path="users/blocked" element={<BlockedUsers />} />

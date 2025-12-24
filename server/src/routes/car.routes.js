@@ -12,6 +12,8 @@ router.route("/latest").get(carController.latestCar); //checked
 router.route("/brands").get(carController.getCarBrands); //checked
 router.route("/models/:brand").get(carController.getCarModelsByBrand); //checked
 router.route("/electric").get(carController.getElectricCars); //checked
+router.route("/category-stats").get(carController.getCarCategoryStats); //checked
+
 
 router.use(verifyJWT());
 router.route("/search").get(carController.searchCars); //checked

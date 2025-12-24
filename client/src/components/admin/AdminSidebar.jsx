@@ -11,6 +11,7 @@ import { NavLink } from "react-router-dom";
 
 const links = [
   { name: "Dashboard", to: "/admin", icon: LayoutDashboard },
+  { name: "All Cars", to: "/admin/cars", icon: Car },
   { name: "Pending Cars", to: "/admin/cars/pending", icon: Car },
   { name: "Users", to: "/admin/users", icon: Users },
   { name: "Blocked Users", to: "/admin/users/blocked", icon: UserX },

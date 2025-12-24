@@ -35,13 +35,19 @@ export const adminService = {
       }
     );
   },
+  getAdminCars: async () => {
+  return await axios.get(`${BASE_URL}/admin/cars`,{withCredentials : true})
+},
+  toggleFeaturedCar: async (id) => {
+  await axios.patch(`${BASE_URL}/admin/cars/featured/${id}`,{},{withCredentials: true})
+},
+  //USER ACTIONS
   getActiveUSers: async () => {
     return await axios.get(`${BASE_URL}/admin/users`, {
       withCredentials: true,
     });
   },
 
-  //USER ACTIONS
   blockUser: async (userId) => {
     return await axios.patch(
       `${BASE_URL}/admin/users/block/${userId}`,

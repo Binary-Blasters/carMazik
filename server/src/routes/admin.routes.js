@@ -27,6 +27,8 @@ router.route("/users/:user_id").get(adminController.getUserById)  //checked
 
 //cars 
 router.route("/cars/pending").get(adminController.getPendingCars)  //checked
+router.route("/cars").get(adminController.getAllCars); //checked
+router.route("/cars/featured/:car_id").patch(adminController.toggleFeaturedCar);  //checked
 router.route("/cars/approve/:car_id").patch(adminController.approveCar)  //checked
 router.route("/cars/reject/:car_id").patch(adminController.rejectCar) //checked
 

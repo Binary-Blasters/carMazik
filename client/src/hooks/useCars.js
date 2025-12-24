@@ -13,29 +13,33 @@ export const useCars = ({ searchParams, filters, sortBy, page }) => {
       try {
         setLoading(true);
 
-        const params = {
-          
-          search: searchParams.get("search") || undefined,
-          category: searchParams.get("category") || undefined,
+        const fuelTypeFromUrl = searchParams.get("fuelType");
+        const bodyTypeFromUrl = searchParams.get("bodyType");
+        const categoryFromUrl = searchParams.get("category");
+        const searchFromUrl = searchParams.get("search");
 
-         
+        const params = {
+          search: searchFromUrl || undefined,
+
+          bodyType: bodyTypeFromUrl || undefined,
+          category: categoryFromUrl || undefined,
+
+          // ✅ IMPORTANT FIX
+          fuelType: fuelTypeFromUrl || filters.fuelType || undefined,
+
           brand: filters.brand || undefined,
-          fuelType: filters.fuelType || undefined,
           transmission: filters.transmission || undefined,
           minPrice: filters.minPrice || undefined,
           maxPrice: filters.maxPrice || undefined,
 
-          
           sortBy: sortBy || undefined,
-
-         
           page,
           limit: LIMIT,
         };
 
-        const res = await getCars(params);
-        console.log(res);
         
+
+        const res = await getCars(params);
 
         setCars(res.cars || []);
         setTotal(res.total || 0);

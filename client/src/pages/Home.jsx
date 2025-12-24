@@ -17,6 +17,8 @@ import {getLatestCars} from "../api/car"
 import LoadingScreen from "../components/ui/LoadingScreen";
 import LatestCarsSection from "../components/cars/LatestCarsSection";
 import ElectricCarSection from "../components/cars/ElectricCarSection";
+import BrowseByCategory from "../components/cars/BrowseByCategory";
+import FeaturedCarsSection from "../components/cars/FeaturedCarsSection";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -208,94 +210,22 @@ const Home = () => {
     <div className="min-h-screen bg-gray-50">
       <HeroSection />
 
-      {/* Browse by Category */}
+      
       <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Browse by Category
-            </h2>
-            <p className="text-gray-600">Explore cars by body type</p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {[
-              {
-                key: "hatchback",
-                name: "Hatchback",
-                img: "https://images.unsplash.com/photo-1617469767053-d3b523a0b982?w=400",
-                count: "150+ Cars",
-              },
-              {
-                key: "sedan",
-                name: "Sedan",
-                img: "https://images.unsplash.com/photo-1590362891991-f776e747a588?w=400",
-                count: "120+ Cars",
-              },
-              {
-                key: "suv",
-                name: "SUV",
-                img: "https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=400",
-                count: "200+ Cars",
-              },
-              {
-                key: "luxury",
-                name: "Luxury",
-                img: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=400",
-                count: "80+ Cars",
-              },
-            ].map((cat) => (
-              <Link
-                key={cat.key}
-                to={`/listings?category=${cat.key}`}
-                className="group relative overflow-hidden rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300"
-              >
-                <img
-                  src={cat.img}
-                  alt={cat.name}
-                  className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-4">
-                  <h3 className="text-white text-xl font-bold">{cat.name}</h3>
-                  <p className="text-white/80 text-sm">{cat.count}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
+        <BrowseByCategory/>
       </section>
 
-      {/* Featured Cars */}
+      
       <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-12">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-                Featured Cars
-              </h2>
-              <p className="text-gray-600">Handpicked cars just for you</p>
-            </div>
-            <Link to="/listings">
-              <Button variant="outline" className="group">
-                View All
-                <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredCars.map((car) => (
-              <CarCard key={car.id} car={car} />
-            ))}
-          </div>
-        </div>
+        <FeaturedCarsSection/>
       </section>
 
-      {/* Latest Cars */}
+      
        <section className="py-16 bg-white">
       <LatestCarsSection />
       </section>
 
-      {/* Electric Cars */}
+     
       <section className="py-16 bg-gray-50">
         <ElectricCarSection/>
       </section>

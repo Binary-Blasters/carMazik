@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Loader2, CarFront } from "lucide-react";
 
 import { Button } from "../ui/Button";
-import { getElectricCars } from "../../api/car";
+import { getCars, getElectricCars } from "../../api/car";
 import CarmazikAlert from "../ui/CarmazikAlert";
 import CarCard from "../CarCard";
 
@@ -12,48 +12,43 @@ const ElectricCarSection = () => {
   const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState(null);
 
-  /* ---------------- FETCH ELECTRIC CARS ---------------- */
 
   useEffect(() => {
-    const fetchElectricCars = async () => {
-      try {
-        setLoading(true);
+  const fetchElectricCars = async () => {
+    try {
+      setLoading(true);
 
-        const res = await getElectricCars();
-        const cars = res?.data || [];
-        
-        
+      const res = await getCars({
+        fuelType: "Electric",
+        category: "latest",
+        limit: 4,
+        page: 1,
+      });
 
-        // Latest 4 electric cars (safe sort)
-        const latestElectricCars = cars
-          .filter((car) => car.createdAt)
-          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-          .slice(0, 4);
+      setElectricCars(res?.cars || []);
+    } catch (error) {
+      console.error("❌ Error fetching electric cars:", error);
+      setAlert({
+        type: "error",
+        title: "Failed to Load Cars",
+        message:
+          error.response?.data?.message ||
+          "Something went wrong while fetching electric cars.",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        setElectricCars(latestElectricCars);
-      } catch (error) {
-        console.error("❌ Error fetching electric cars:", error);
-        setAlert({
-          type: "error",
-          title: "Failed to Load Cars",
-          message:
-            error.response?.data?.message ||
-            "Something went wrong while fetching electric cars.",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
+  fetchElectricCars();
+}, []);
 
-    fetchElectricCars(); // ✅ correct function call
-  }, []);
 
-  /* ---------------- UI ---------------- */
 
   return (
     <section className="py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
+        
         <div className="flex justify-between items-center mb-8">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
@@ -64,7 +59,7 @@ const ElectricCarSection = () => {
             </p>
           </div>
 
-          <Link to="/listings?category=electric">
+          <Link to="/listings?fuelType=electric">
             <Button variant="outline" className="group">
               View All
               <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -72,7 +67,7 @@ const ElectricCarSection = () => {
           </Link>
         </div>
 
-        {/* Content */}
+        
         {loading ? (
           <div className="flex flex-col items-center justify-center py-12 text-gray-500">
             <Loader2 className="h-8 w-8 text-blue-600 animate-spin mb-2" />

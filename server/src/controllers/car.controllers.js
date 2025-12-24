@@ -10,176 +10,174 @@ import sharp from "sharp";
 import { safeUnlink } from "../utils/safeUnlink.js";
 
 const carController = {
-   uploadCar : asyncHandler(async (req, res) => {
-  const carData = req.body;
-  const carImages = req.files;
-  const sellerUserId = req.user?.id;
+  uploadCar: asyncHandler(async (req, res) => {
+    const carData = req.body;
+    const carImages = req.files;
+    const sellerUserId = req.user?.id;
 
-  /* ---------------- SELLER CHECK ---------------- */
-  const seller = await Seller.findOne({ userid: sellerUserId });
-  if (!seller) {
-    throw new ApiError(401, "Unauthorized: Seller not found");
-  }
+    /* ---------------- SELLER CHECK ---------------- */
+    const seller = await Seller.findOne({ userid: sellerUserId });
+    if (!seller) {
+      throw new ApiError(401, "Unauthorized: Seller not found");
+    }
 
-  if (!carData || !carImages || carImages.length === 0) {
-    throw new ApiError(400, "Car data and images are required");
-  }
+    if (!carData || !carImages || carImages.length === 0) {
+      throw new ApiError(400, "Car data and images are required");
+    }
 
-  /* ---------------- PARSE JSON FIELDS ---------------- */
+    /* ---------------- PARSE JSON FIELDS ---------------- */
 
-  const parseJSON = (value, fallback) => {
-    if (typeof value === "string") {
+    const parseJSON = (value, fallback) => {
+      if (typeof value === "string") {
+        try {
+          return JSON.parse(value);
+        } catch {
+          return fallback;
+        }
+      }
+      return value || fallback;
+    };
+
+    carData.engine = parseJSON(carData.engine, {
+      capacity: "",
+      power: "",
+      torque: "",
+    });
+
+    carData.battery = parseJSON(carData.battery, {
+      range: "",
+      chargingTime: "",
+    });
+
+    carData.cng = parseJSON(carData.cng, {
+      tankCapacity: "",
+    });
+
+    carData.features = parseJSON(carData.features, []);
+
+    /* ---------------- NUMBER FIELDS ---------------- */
+    carData.price = Number(carData.price) || 0;
+    carData.year = Number(carData.year) || null;
+    carData.kmDriven = Number(carData.kmDriven) || 0;
+    carData.seatingCapacity = Number(carData.seatingCapacity) || 0;
+
+    /* ---------------- IMAGE PATHS ---------------- */
+    const uploadDir = path.join(process.cwd(), "public", "images", "cars");
+    const watermarkPath = path.join(process.cwd(), "public", "watermark.png");
+
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+
+    const imagePaths = [];
+
+    /* ---------------- IMAGE PROCESSING ---------------- */
+    for (const file of carImages) {
+      const inputPath = file.path;
+      const wmFilename = `wm-${file.filename}`;
+      const outputPath = path.join(uploadDir, wmFilename);
+
       try {
-        return JSON.parse(value);
-      } catch {
-        return fallback;
+        if (fs.existsSync(watermarkPath)) {
+          const watermark = await sharp(watermarkPath)
+            .resize(120)
+            .png()
+            .toBuffer();
+
+          await sharp(inputPath)
+            .composite([
+              {
+                input: watermark,
+                gravity: "southeast",
+                blend: "over",
+              },
+            ])
+            .jpeg({ quality: 90 })
+            .toFile(outputPath);
+        } else {
+          await sharp(inputPath).jpeg({ quality: 90 }).toFile(outputPath);
+        }
+
+        imagePaths.push(`/images/cars/${wmFilename}`);
+        await safeUnlink(inputPath);
+      } catch (err) {
+        console.error("❌ Image processing failed:", err);
+
+        // fallback
+        await fs.promises.copyFile(inputPath, outputPath);
+        imagePaths.push(`/images/cars/${wmFilename}`);
+        await safeUnlink(inputPath);
       }
     }
-    return value || fallback;
-  };
 
-  carData.engine = parseJSON(carData.engine, {
-    capacity: "",
-    power: "",
-    torque: "",
-  });
+    /* ---------------- FINAL CAR OBJECT ---------------- */
 
-  carData.battery = parseJSON(carData.battery, {
-    range: "",
-    chargingTime: "",
-  });
+    const newCarData = {
+      title: carData.title,
+      brand: carData.brand,
+      model: carData.model,
+      variant: carData.variant,
+      bodyType: carData.bodyType,
 
-  carData.cng = parseJSON(carData.cng, {
-    tankCapacity: "",
-  });
+      year: carData.year,
+      price: carData.price,
+      negotiable: carData.negotiable === "true" || carData.negotiable === true,
 
-  carData.features = parseJSON(carData.features, []);
+      fuelType: carData.fuelType,
+      transmission: carData.transmission,
 
-  /* ---------------- NUMBER FIELDS ---------------- */
-  carData.price = Number(carData.price) || 0;
-  carData.year = Number(carData.year) || null;
-  carData.kmDriven = Number(carData.kmDriven) || 0;
-  carData.seatingCapacity = Number(carData.seatingCapacity) || 0;
+      kmDriven: carData.kmDriven,
+      ownership: carData.ownership,
+      color: carData.color,
+      mileage: carData.mileage,
+      seatingCapacity: carData.seatingCapacity,
+      location: carData.location,
 
-  /* ---------------- IMAGE PATHS ---------------- */
-  const uploadDir = path.join(process.cwd(), "public", "images", "cars");
-  const watermarkPath = path.join(process.cwd(), "public", "watermark.png");
-
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-  }
-
-  const imagePaths = [];
-
-  /* ---------------- IMAGE PROCESSING ---------------- */
-  for (const file of carImages) {
-    const inputPath = file.path;
-    const wmFilename = `wm-${file.filename}`;
-    const outputPath = path.join(uploadDir, wmFilename);
-
-    try {
-      if (fs.existsSync(watermarkPath)) {
-        const watermark = await sharp(watermarkPath)
-          .resize(120)
-          .png()
-          .toBuffer();
-
-        await sharp(inputPath)
-          .composite([
-            {
-              input: watermark,
-              gravity: "southeast",
-              blend: "over",
-            },
-          ])
-          .jpeg({ quality: 90 })
-          .toFile(outputPath);
-      } else {
-        await sharp(inputPath)
-          .jpeg({ quality: 90 })
-          .toFile(outputPath);
-      }
-
-      imagePaths.push(`/images/cars/${wmFilename}`);
-      await safeUnlink(inputPath);
-    } catch (err) {
-      console.error("❌ Image processing failed:", err);
-
-      // fallback
-      await fs.promises.copyFile(inputPath, outputPath);
-      imagePaths.push(`/images/cars/${wmFilename}`);
-      await safeUnlink(inputPath);
-    }
-  }
-
-  /* ---------------- FINAL CAR OBJECT ---------------- */
-
-  const newCarData = {
-    title: carData.title,
-    brand: carData.brand,
-    model: carData.model,
-    variant: carData.variant,
-    bodyType: carData.bodyType,
-
-    year: carData.year,
-    price: carData.price,
-    negotiable: carData.negotiable === "true" || carData.negotiable === true,
-
-    fuelType: carData.fuelType,
-    transmission: carData.transmission,
-
-    kmDriven: carData.kmDriven,
-    ownership: carData.ownership,
-    color: carData.color,
-    mileage: carData.mileage,
-    seatingCapacity: carData.seatingCapacity,
-    location: carData.location,
-
-    engine:
-      ["Petrol", "Diesel", "Hybrid"].includes(carData.fuelType)
+      engine: ["Petrol", "Diesel", "Hybrid"].includes(carData.fuelType)
         ? carData.engine
         : undefined,
 
-    battery:
-      ["Electric", "Hybrid"].includes(carData.fuelType)
+      battery: ["Electric", "Hybrid"].includes(carData.fuelType)
         ? carData.battery
         : undefined,
 
-    cng: carData.fuelType === "CNG" ? carData.cng : undefined,
+      cng: carData.fuelType === "CNG" ? carData.cng : undefined,
 
-    features: Array.isArray(carData.features) ? carData.features : [],
-    description: carData.description,
+      features: Array.isArray(carData.features) ? carData.features : [],
+      description: carData.description,
 
-    images: imagePaths,
-    seller: seller._id,
-    status: "pending",
-  };
+      images: imagePaths,
+      seller: seller._id,
+      status: "pending",
+    };
 
-  /* ---------------- SAVE TO DB ---------------- */
-  try {
-    const newCar = await Car.create(newCarData);
+    /* ---------------- SAVE TO DB ---------------- */
+    try {
+      const newCar = await Car.create(newCarData);
 
-    sharp.cache(false);
+      sharp.cache(false);
 
-    return res.status(201).json(
-      new ApiResponse(
-        201,
-        newCar,
-        "Car uploaded successfully and sent for approval"
-      )
-    );
-  } catch (error) {
-    console.error("❌ Car save error:", error);
+      return res
+        .status(201)
+        .json(
+          new ApiResponse(
+            201,
+            newCar,
+            "Car uploaded successfully and sent for approval"
+          )
+        );
+    } catch (error) {
+      console.error("❌ Car save error:", error);
 
-    // cleanup images if DB fails
-    for (const img of imagePaths) {
-      const filePath = path.join(process.cwd(), "public", img);
-      await safeUnlink(filePath);
+      // cleanup images if DB fails
+      for (const img of imagePaths) {
+        const filePath = path.join(process.cwd(), "public", img);
+        await safeUnlink(filePath);
+      }
+
+      throw new ApiError(500, "Failed to save car details. Please try again.");
     }
-
-    throw new ApiError(500, "Failed to save car details. Please try again.");
-  }
-}),
+  }),
 
   getCars: asyncHandler(async (req, res) => {
     try {
@@ -190,6 +188,7 @@ const carController = {
         minPrice,
         maxPrice,
         fuelType,
+        bodyType,
         transmission,
         minKm,
         maxKm,
@@ -207,7 +206,12 @@ const carController = {
       if (brand?.trim()) query.brand = { $regex: brand.trim(), $options: "i" };
       if (model?.trim()) query.model = { $regex: model.trim(), $options: "i" };
       if (year) query.year = Number(year);
-      if (fuelType) query.fuelType = fuelType;
+      if (fuelType) {
+        query.fuelType = {
+          $regex: `^${fuelType}$`,
+          $options: "i",
+        };
+      }
       if (transmission) query.transmission = transmission;
       if (color) query.color = color;
 
@@ -221,6 +225,9 @@ const carController = {
         query.kmDriven = {};
         if (minKm) query.kmDriven.$gte = Number(minKm);
         if (maxKm) query.kmDriven.$lte = Number(maxKm);
+      }
+      if (bodyType) {
+        query.bodyType = { $regex: `^${bodyType}$`, $options: "i" };
       }
 
       if (search) {
@@ -241,25 +248,22 @@ const carController = {
       } else if (category === "featured") {
         query.featured = true;
         sortOptions.createdAt = -1;
-      } else if(category === "electric") {
-        query.fuelType = "Electric";
+      } else if (category === "featured") {
+        query.featured = true;
         sortOptions.createdAt = -1;
-      }
-      else if (sortBy) {
-        sortOptions[sortBy] = sortOrder === "asc" ? 1 : -1;
       } else {
         sortOptions.createdAt = -1;
       }
-
+      
       const skip = (page - 1) * limit;
       
-
       const cars = await Car.find(query)
-        .sort(sortOptions)
-        .skip(skip)
-        .limit(Number(limit))
-        .populate("seller", "name contact");
-
+      .sort(sortOptions)
+      .skip(skip)
+      .limit(Number(limit))
+      .populate("seller", "name contact");
+      
+      
       const total = await Car.countDocuments(query);
 
       res.status(200).json(
@@ -288,8 +292,7 @@ const carController = {
         .sort({ createdAt: -1 })
         .limit(5)
         .populate("seller", "name contact");
-      console.log(cars);
-      
+
       return res
         .status(200)
         .json(new ApiResponse(200, cars, "Latest cars fetched successfully"));
@@ -480,6 +483,26 @@ const carController = {
         "Failed to fetch sold cars. Please try again later."
       );
     }
+  }),
+  getCarCategoryStats: asyncHandler(async (req, res) => {
+    const stats = await Car.aggregate([
+      { $match: { status: "approved" } },
+      {
+        $group: {
+          _id: "$bodyType",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    const formatted = stats.reduce((acc, cur) => {
+      acc[cur._id.toLowerCase()] = cur.count;
+      return acc;
+    }, {});
+
+    res
+      .status(200)
+      .json(new ApiResponse(200, formatted, "Category stats fetched"));
   }),
 };
 

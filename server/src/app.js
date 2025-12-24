@@ -26,7 +26,7 @@ const limiter = rateLimit({
 
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://carmazik.onrender.com"],
+    origin: process.env.CORS_ORIGIN,
     credentials: true,
   })
 );

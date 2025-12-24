@@ -18,3 +18,18 @@ export const searchCars = async (query) => {
   });
   return res.data.data;
 };
+
+export const getCategoryStats = async () => {
+  const res = await API.get("/cars/category-stats");
+  return res.data.data;
+}
+export const getFeaturedCars = async () => {
+  const res = await API.get("/cars", {
+    params: {
+      category: "featured",
+      limit: 8,
+    },
+  });
+  
+  return res.data.data;
+};

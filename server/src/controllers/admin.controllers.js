@@ -80,9 +80,7 @@ export const adminController = {
     }
     return res
       .status(200)
-      .json(
-        new ApiResponse(200, allSellers, "All active sellers featched")
-      );
+      .json(new ApiResponse(200, allSellers, "All active sellers featched"));
   }),
   blockSeller: asyncHandler(async (req, res) => {
     const { seller_id } = req.params;
@@ -121,7 +119,7 @@ export const adminController = {
       .json(new ApiResponse(200, unblockedSeller, "Seller unblocked"));
   }),
   getBLockedSellers: asyncHandler(async (req, res) => {
-    const blockedSellers = await Seller.find({ isBlocked: true }); 
+    const blockedSellers = await Seller.find({ isBlocked: true });
     if (!blockedSellers || blockedSellers.length < 1) {
       throw new ApiError(404, "No Blocked sellers");
     }
@@ -246,7 +244,7 @@ export const adminController = {
       { new: true, runValidators: true }
     );
     console.log(approvedCar);
-    
+
     if (!approvedCar) {
       throw new ApiError(404, "Car not found");
     }
@@ -255,57 +253,107 @@ export const adminController = {
       .json(new ApiResponse(200, approvedCar, "Car approved"));
   }),
 
- rejectCar: asyncHandler(async (req, res) => {
-  const { car_id } = req.params;
-  const { reason } = req.body; // optional rejection reason (sent from admin panel)
+  rejectCar: asyncHandler(async (req, res) => {
+    const { car_id } = req.params;
+    const { reason } = req.body; // optional rejection reason (sent from admin panel)
 
-  if (!car_id) {
-    throw new ApiError(400, "Car ID is required to reject a car");
-  }
+    if (!car_id) {
+      throw new ApiError(400, "Car ID is required to reject a car");
+    }
+
+    const car = await Car.findById(car_id);
+    if (!car) {
+      throw new ApiError(404, "Car not found");
+    }
+
+    if (car.status === "rejected") {
+      throw new ApiError(400, "Car is already rejected");
+    }
+
+    car.status = "rejected";
+    car.rejectionReason = reason || "No reason provided";
+    car.rejectedAt = new Date();
+
+    await car.save();
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, car, "Car has been successfully rejected."));
+  }),
+
+  getAllCars: asyncHandler(async (req, res) => {
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const cars = await Car.find({status: "approved"})
+      .populate("seller", "name contact")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Car.countDocuments({status: "approved"});
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { cars, total, page, limit },
+          "All cars fetched successfully"
+        )
+      );
+  }),
+  toggleFeaturedCar: asyncHandler(async (req, res) => {
+  const { car_id } = req.params;
 
   const car = await Car.findById(car_id);
-  if (!car) {
-    throw new ApiError(404, "Car not found");
+  if (!car) throw new ApiError(404, "Car not found");
+
+  if (car.status !== "approved") {
+    throw new ApiError(400, "Only approved cars can be featured");
   }
 
-  if (car.status === "rejected") {
-    throw new ApiError(400, "Car is already rejected");
-  }
-
-  car.status = "rejected";
-  car.rejectionReason = reason || "No reason provided";
-  car.rejectedAt = new Date();
-
+  car.featured = !car.featured;
   await car.save();
-
-  return res
-    .status(200)
-    .json(
-      new ApiResponse(200, car, "Car has been successfully rejected.")
-    );
-}),
-
-getStats: asyncHandler(async (req, res) => {
-  const totalUsers = await User.countDocuments({ role: "user" });
-  const totalSellers = await Seller.countDocuments({ verificationStatus: "approved" });
-  const totalCars = await Car.countDocuments({ status: "approved" });
-  const pendingCars = await Car.countDocuments({ status: "pending" });
-  const pendingSellers = await Seller.countDocuments({ verificationStatus: "pending" });
-  const blockedUsers = await User.countDocuments({ role: "user", isBlocked: true });
 
   return res.status(200).json(
     new ApiResponse(
       200,
-      {
-        totalUsers,
-        totalSellers,
-        totalCars,
-        pendingCars,
-        pendingSellers,
-        blockedUsers,
-      },
-      "Statistics fetched successfully"
+      car,
+      car.featured ? "Car marked as featured" : "Car removed from featured"
     )
-  )
+  );
 }),
+
+  getStats: asyncHandler(async (req, res) => {
+    const totalUsers = await User.countDocuments({ role: "user" });
+    const totalSellers = await Seller.countDocuments({
+      verificationStatus: "approved",
+    });
+    const totalCars = await Car.countDocuments({ status: "approved" });
+    const pendingCars = await Car.countDocuments({ status: "pending" });
+    const pendingSellers = await Seller.countDocuments({
+      verificationStatus: "pending",
+    });
+    const blockedUsers = await User.countDocuments({
+      role: "user",
+      isBlocked: true,
+    });
+
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          totalUsers,
+          totalSellers,
+          totalCars,
+          pendingCars,
+          pendingSellers,
+          blockedUsers,
+        },
+        "Statistics fetched successfully"
+      )
+    );
+  }),
 };
