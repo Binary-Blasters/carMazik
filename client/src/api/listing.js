@@ -36,7 +36,7 @@ export const getFeaturedCars = async () => {
 
 
 export const getUpcomingCars = async () => {
-  const res = await API.get("/admin/upcoming-cars");
+  const res = await API.get("/upcoming-cars");
   return res.data;
 };
 

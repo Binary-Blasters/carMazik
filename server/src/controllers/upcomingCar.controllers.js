@@ -7,6 +7,8 @@ import { Car } from "../models/car.models.js";
 
 
 export const getUpcomingCars = asyncHandler(async (req, res) => {
+  
+  
   const cars = await UpcomingCar.find({ isActive: true })
     .sort({ expectedLaunchDate: 1 });
 
@@ -94,7 +96,7 @@ export const launchUpcomingCar = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Car already launched");
   }
 
-  // 👉 Create REAL car entry (NO SELLER)
+ 
   const newCar = await Car.create({
     title: upcomingCar.title,
     brand: upcomingCar.brand,
@@ -137,6 +139,9 @@ export const launchUpcomingCar = asyncHandler(async (req, res) => {
 export const getLaunchedCars = asyncHandler(async (req, res) => {
   const cars = await UpcomingCar.find({ status: "launched" })
     .sort({ updatedAt: -1 });
+  
+    console.log("Launched:" , cars);
+    
 
   return res.status(200).json(
     new ApiResponse(200, cars, "Launched cars fetched")

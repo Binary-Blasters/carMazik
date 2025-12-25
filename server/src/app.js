@@ -54,7 +54,7 @@ app.use("/api/v1/seller", sellerRouter);
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/cars", carRouter);
-app.use("/api/v1/admin/upcoming-cars", upcomingCarRouter);
+app.use("/api/v1/upcoming-cars", upcomingCarRouter);
 app.use("/api/v1/compare", compareRoutes);
 
 app.get("/test-path", (req, res) => {

@@ -22,7 +22,7 @@ export const useCars = ({ searchParams, filters, sortBy, page }) => {
         const maxPriceFromUrl = searchParams.get("maxPrice");
         const brandFromUrl = searchParams.get("brand");
 
-        // ✅ FINAL PARAMS
+       
         const params = {
           search: searchFromUrl || undefined,
           category: categoryFromUrl || undefined,
@@ -32,7 +32,7 @@ export const useCars = ({ searchParams, filters, sortBy, page }) => {
           brand: brandFromUrl || filters.brand || undefined,
           transmission: filters.transmission || undefined,
 
-          // 🔥 FIXED PRICE FLOW
+        
           minPrice: minPriceFromUrl || filters.minPrice || undefined,
           maxPrice: maxPriceFromUrl || filters.maxPrice || undefined,
 
@@ -41,11 +41,11 @@ export const useCars = ({ searchParams, filters, sortBy, page }) => {
           limit: LIMIT,
         };
 
-        console.log("🚀 FETCH PARAMS:", params);
+      
 
         const res = await getCars(params);
 
-        // ✅ handle both API shapes
+       
         if (Array.isArray(res)) {
           setCars(res);
           setTotal(res.length);

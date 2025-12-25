@@ -80,7 +80,7 @@ export const getCars = async (filters = {}) => {
 };
 
 export const getNewlyLaunchedCars = async () => {
-  const res = await axios.get(`${API_URL}/cars/newly-launched`, {
+  const res = await axios.get(`${API_URL}/upcoming-cars/launched`, {
     withCredentials: true,
   });
   return res.data.data;

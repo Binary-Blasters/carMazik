@@ -34,7 +34,7 @@ const Comparisons = () => {
     fetch();
   }, []);
 
-  if (loading) return <LoadingScreen />;
+  if (loading) return <LoadingScreen stuff={"Comparisons"}/>;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-10">
@@ -115,7 +115,7 @@ const CompareCard = ({ a, b }) => {
 
       {/* CTA */}
       <Link
-        to={`/compare?carA=${a._id}&carB=${b._id}`}
+        to={`/compare/${slug}}`}
         className="block mt-6 text-center border border-orange-400 text-orange-600 py-2 rounded-lg font-medium hover:bg-orange-50 transition"
       >
         {a.model} vs {b.model}

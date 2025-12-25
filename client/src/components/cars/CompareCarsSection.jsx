@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { getComparePairs } from "../../api/compare";
+import {makeSlug} from "../../utils/makeSlug";
 
 const BASE_IMAGE_URL = import.meta.env.VITE_IMAGE_URL || "";
 
@@ -21,7 +22,6 @@ const CompareCarsSection = () => {
     const fetchPairs = async () => {
       try {
         const res = await getComparePairs();
-        console.log("COMPARE API:", res);
 
         
         const cars = res?.data || [];
@@ -144,7 +144,7 @@ const CompareCard = ({ a, b }) => (
     </div>
 
     <Link
-      to={`/compare?carA=${a._id}&carB=${b._id}`}
+      to={`/compare/${makeSlug(a, b)}`}
       className="block text-center border border-orange-400 text-orange-600 py-2 rounded-lg mt-4 font-medium hover:bg-orange-50"
     >
       {a.model} vs {b.model}

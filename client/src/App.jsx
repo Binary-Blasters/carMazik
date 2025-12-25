@@ -25,6 +25,7 @@ import AdminUpcomingCars from "./pages/admin/upcomingCars/AdminUpcomingCars";
 import NotFound from "./NotFound";
 import FAQ from "./pages/FAQ";
 import Comparisons from "./pages/Comparisons";
+import ComparePage from "./pages/ComparePage";
 
 
 function App() {
@@ -57,6 +58,7 @@ function App() {
 
               </Route>
               <Route path="/comparisons" element={<Comparisons />} />
+              <Route path="/compare/:slug" element={<ComparePage />} />
               <Route path="/FAQs" element={<FAQ />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

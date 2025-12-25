@@ -17,6 +17,7 @@ const UpcomingCarsSection = () => {
         const res = await getUpcomingCars();
         
         
+        
         setCars(res.data || []);
       } finally {
         setLoading(false);
