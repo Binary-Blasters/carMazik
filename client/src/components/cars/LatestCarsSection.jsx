@@ -16,10 +16,9 @@ const LatestCarsSection = () => {
     const fetchLatestCars = async () => {
       try {
         const res = await getLatestCars();
-        
+
         const cars = res?.data || [];
 
-       
         const sortedCars = cars
           .filter((car) => car.createdAt)
           .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
@@ -46,7 +45,6 @@ const LatestCarsSection = () => {
   return (
     <section className="py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-     
         <div className="flex justify-between items-center mb-8">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
@@ -62,7 +60,8 @@ const LatestCarsSection = () => {
           </Link>
         </div>
 
-       
+        {/* CARS LIST */}
+        {/* CARS LIST */}
         {loading ? (
           <div className="flex flex-col items-center justify-center py-12 text-gray-500">
             <Loader2 className="h-8 w-8 text-blue-600 animate-spin mb-2" />
@@ -77,12 +76,25 @@ const LatestCarsSection = () => {
             </p>
           </div>
         ) : (
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {latestCars.map((car) => (
-              <CarCard key={car._id} car={car} />
-            ))}
-          </div>
+          <>
+            {/* 📱 MOBILE → Horizontal Scroll */}
+            <div className="md:hidden overflow-x-auto">
+              <div className="flex gap-4 pb-2">
+                {latestCars.map((car) => (
+                  <div key={car._id} className="min-w-[85%]">
+                    <CarCard car={car} />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 💻 DESKTOP → Grid */}
+            <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {latestCars.map((car) => (
+                <CarCard key={car._id} car={car} />
+              ))}
+            </div>
+          </>
         )}
       </div>
 
