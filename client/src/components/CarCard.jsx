@@ -172,7 +172,7 @@ const CarCard = ({ car = {}, onViewDetails }) => {
           </Badge>
         )}
 
-        {/* Electric */}
+      
         {isElectric && (
           <span className="absolute top-12 left-3 inline-flex items-center gap-1 bg-gradient-to-r from-green-200 to-green-300 text-green-800 text-xs font-semibold px-2 py-1 rounded-full shadow-sm">
             <Zap className="h-3 w-3" />

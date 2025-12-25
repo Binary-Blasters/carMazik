@@ -40,3 +40,10 @@ export const getUpcomingCars = async () => {
   return res.data;
 };
 
+export const getCarsByBudget = async ({ minPrice, maxPrice }) => {
+  const res = await API.get("/cars/budget", {
+    params: { minPrice, maxPrice },
+  });
+  return res.data;
+};
+

@@ -11,6 +11,7 @@ import userRouter from "./routes/user.routes.js";
 import adminRouter from "./routes/admin.routes.js";
 import carRouter from "./routes/car.routes.js";
 import upcomingCarRouter from "./routes/upComingCar.routes.js";
+import compareRoutes from "./routes/compare.routes.js";
 
 const app = express();
 
@@ -54,6 +55,7 @@ app.use("/api/v1/user", userRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/cars", carRouter);
 app.use("/api/v1/admin/upcoming-cars", upcomingCarRouter);
+app.use("/api/v1/compare", compareRoutes);
 
 app.get("/test-path", (req, res) => {
   res.sendFile(path.join(__dirname, "../public/images/cars/1762628845890-09.webp"));

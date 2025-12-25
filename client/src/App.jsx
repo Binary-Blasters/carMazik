@@ -22,6 +22,9 @@ import ActiveSellers from "./pages/admin/ActiveSellers";
 import BlockedSellers from "./pages/admin/BlockedSellers";
 import AdminAllCars from "./pages/admin/AdminAllCars";
 import AdminUpcomingCars from "./pages/admin/upcomingCars/AdminUpcomingCars";
+import NotFound from "./NotFound";
+import FAQ from "./pages/FAQ";
+import Comparisons from "./pages/Comparisons";
 
 
 function App() {
@@ -51,8 +54,13 @@ function App() {
                 <Route path="sellers" element={<ActiveSellers />} />
                 <Route path="sellers/pending" element={<PendingSellers />} />
                 <Route path="sellers/blocked" element={<BlockedSellers />} />
+
               </Route>
+              <Route path="/comparisons" element={<Comparisons />} />
+              <Route path="/FAQs" element={<FAQ />} />
+              <Route path="*" element={<NotFound />} />
             </Routes>
+            
           </Layout>
 
           <Toaster />

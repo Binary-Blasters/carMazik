@@ -27,7 +27,7 @@ const Navbar = () => {
   const dispatch = useDispatch();
   const userMenuRef = useRef(null);
 
-  // ✅ FIX: user bhi nikaala
+  
   const { token, user } = useSelector((state) => state.auth);
   const isLoggedIn = Boolean(token);
 
@@ -55,7 +55,7 @@ const Navbar = () => {
   // ✅ FIX: safe dashboard path
   const getDashboardPath = () => {
     if (user?.role === "seller") return "/seller/dashboard";
-    if (user?.role === "admin") return "/admin/dashboard";
+    if (user?.role === "admin") return "/admin";
     return "/dashboard";
   };
 
@@ -165,10 +165,10 @@ const Navbar = () => {
             <NavItem
               label="NEW CARS"
               items={[
-                { label: "Featured Car", path: "/new/featured" },
-                { label: "Latest Car", path: "/new/latest" },
-                { label: "Electric Car", path: "/new/electric" },
-                { label: "Upcoming Car", path: "/new/upcoming" },
+                { label: "Featured Car", path: "/listings?category=featured" },
+                { label: "Latest Car", path: "/listings?category=latest" },
+                { label: "Electric Car", path: "/listings?fuelType=electric" },
+                { label: "Upcoming Car", path: "/listings?category=upcoming" },
               ]}
             />
 
@@ -184,13 +184,13 @@ const Navbar = () => {
             <NavItem
               label="CATEGORIES"
               items={[
-                { label: "Hatchback", path: "/category/hatchback" },
-                { label: "Sedan", path: "/category/sedan" },
-                { label: "SUV", path: "/category/suv" },
-                { label: "MUV / MPV", path: "/category/muv-mpv" },
-                { label: "Luxury Cars", path: "/category/luxury" },
-                { label: "Electric Vehicles", path: "/category/electric" },
-                { label: "Hybrid Cars", path: "/category/hybrid" },
+                { label: "Hatchback", path: "/listings?bodyType=hatchback" },
+                { label: "Sedan", path: "/listings?bodyType=sedan" },
+                { label: "SUV", path: "/listings?bodyType=suv" },
+                { label: "MUV / MPV", path: "/listings?bodyType=muv-mpv" },
+                { label: "Luxury Cars", path: "/listings?bodyType=luxury" },
+                { label: "Electric Vehicles", path: "/listings?fuelType=electric" },
+                { label: "Hybrid Cars", path: "/listings?bodyType=hybrid" },
               ]}
             />
 

@@ -13,6 +13,7 @@ router.route("/brands").get(carController.getCarBrands); //checked
 router.route("/models/:brand").get(carController.getCarModelsByBrand); //checked
 router.route("/electric").get(carController.getElectricCars); //checked
 router.route("/category-stats").get(carController.getCarCategoryStats); //checked
+router.get("/budget", carController.getCarsByBudget); //checked
 
 
 router.use(verifyJWT());

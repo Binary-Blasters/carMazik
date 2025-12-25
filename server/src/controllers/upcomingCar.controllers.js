@@ -26,7 +26,7 @@ export const addUpcomingCar = asyncHandler(async (req, res) => {
   } = req.body;
 
   const images = req.files?.map(
-    (file) => `/uploads/upcoming/${file.filename}`
+    (file) => `/images/cars/${file.filename}`
   ) || [];
 
   const car = await UpcomingCar.create({
@@ -116,12 +116,11 @@ export const launchUpcomingCar = asyncHandler(async (req, res) => {
     description: upcomingCar.description,
     images: upcomingCar.images,
 
-    seller: null, // 🔥 IMPORTANT
-    status: "approved",
+    seller: null, 
+    status: "launched",
     featured: false,
   });
 
-  // mark upcoming as launched
   upcomingCar.status = "launched";
   upcomingCar.isActive = false;
   await upcomingCar.save();
@@ -132,5 +131,14 @@ export const launchUpcomingCar = asyncHandler(async (req, res) => {
       { upcomingCar, newCar },
       "Car launched successfully"
     )
+  );
+});
+
+export const getLaunchedCars = asyncHandler(async (req, res) => {
+  const cars = await UpcomingCar.find({ status: "launched" })
+    .sort({ updatedAt: -1 });
+
+  return res.status(200).json(
+    new ApiResponse(200, cars, "Launched cars fetched")
   );
 });

@@ -1,12 +1,15 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useCars } from "../hooks/useCars";
 import CarCard from "../components/CarCard";
 import { Button } from "../components/ui/Button";
 import LoadingScreen from "../components/ui/LoadingScreen";
+import UpcomingCarCard from "../components/UpcomingCarCard";
 
 const Listings = () => {
   const [searchParams] = useSearchParams();
+  const category = searchParams.get("category");
+  const isUpcoming = category === "upcoming";
 
   const [filters, setFilters] = useState({
     brand: "",
@@ -15,6 +18,7 @@ const Listings = () => {
     minPrice: "",
     maxPrice: "",
   });
+  
 
   const [sortBy, setSortBy] = useState("");
   const [page, setPage] = useState(1);
@@ -28,8 +32,8 @@ const Listings = () => {
 
   const totalPages = Math.ceil(total / 9);
   const isSearchMode = Boolean(searchParams.get("search"));
-  console.log(cars);
-  
+
+ 
 
   return (
     <div className="max-w-7xl mx-auto p-6">
@@ -54,9 +58,13 @@ const Listings = () => {
 
       {!loading && cars.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {cars.map((car) => (
-            <CarCard key={car._id} car={car} />
-          ))}
+          {cars.map((car) =>
+            isUpcoming ? (
+              <UpcomingCarCard key={car._id} car={car} />
+            ) : (
+              <CarCard key={car._id} car={car} />
+            )
+          )}
         </div>
       )}
 

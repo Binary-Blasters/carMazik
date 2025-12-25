@@ -20,6 +20,10 @@ import ElectricCarSection from "../components/cars/ElectricCarSection";
 import BrowseByCategory from "../components/cars/BrowseByCategory";
 import FeaturedCarsSection from "../components/cars/FeaturedCarsSection";
 import UpcomingCarsSection from "../components/cars/UpcomingCarsSection";
+import NewlyLaunchedSection from "../components/cars/NewlyLaunchedSection";
+import TrustedCarsByBudget from "../components/cars/TrustedCarsByBudget";
+import CompareQuickSection from "../components/cars/CompareQuickSection";
+import CompareCarsSection from "../components/cars/CompareCarsSection";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -231,64 +235,20 @@ const Home = () => {
         <ElectricCarSection/>
       </section>
 
-      {/* Upcoming Cars */}
+      
       <section className="py-16 bg-white">
         <UpcomingCarsSection/>
       </section>
 
+
+      <section className="py-16 bg-gray-50">
+        <NewlyLaunchedSection/>
+      </section>
+      
+
       {/* Trusted used cars by budget */}
       <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-                Trusted used cars by budget
-              </h2>
-              <p className="text-gray-600">
-                Filter trusted pre-owned cars by price range
-              </p>
-            </div>
-            <Link to="/listings?filter=budget">
-              <Button variant="outline" className="group">
-                View All
-                <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {budgetGroups.map((group) => (
-              <div
-                key={group.id}
-                className="p-6 bg-white rounded-2xl shadow-sm"
-              >
-                <h3 className="text-xl font-semibold mb-2">{group.title}</h3>
-                <p className="text-sm text-gray-500 mb-4">
-                  Trusted listings under {group.title}
-                </p>
-                <div className="space-y-3">
-                  {group.cars?.slice(0, 3).map((c) => (
-                    <div key={c.id} className="flex items-center gap-3">
-                      <img
-                        src={c.image || c.images?.[0]}
-                        alt={c.name}
-                        className="w-16 h-10 object-cover rounded"
-                      />
-                      <div>
-                        <div className="text-sm font-medium">{c.name}</div>
-                        <div className="text-xs text-gray-500">
-                          ₹{parsePrice(c.price).toLocaleString()}
-                        </div>
-                      </div>
-                    </div>
-                  )) || (
-                    <div className="text-sm text-gray-400">No listings</div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <TrustedCarsByBudget />
       </section>
 
       {/* Popular brands */}
@@ -349,193 +309,17 @@ const Home = () => {
 
       {/* Compare & choose the right car */}
       <section className="py-16 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-                Compare & choose the right car
-              </h2>
-              <p className="text-gray-600">
-                Quick comparisons to help you decide
-              </p>
-            </div>
-            <Link to="/compare">
-              <Button variant="outline" className="group">
-                Start Comparing
-                <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {compareGroups.map((cg) => (
-              <div key={cg.id} className="p-6 bg-white rounded-2xl shadow-sm">
-                <h3 className="text-lg font-semibold mb-2">{cg.title}</h3>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  {cg.items?.slice(0, 4).map((it, idx) => (
-                    <li key={idx} className="flex justify-between">
-                      <span>{it.label}</span>
-                      <span className="font-medium">{it.value}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-4">
-                  <Link
-                    to={`/compare/${cg.id}`}
-                    className="text-sm font-medium text-indigo-600"
-                  >
-                    See detailed comparison →
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <CompareQuickSection/>
       </section>
 
       {/* Get trusted used cars nearby — carousel compare cards */}
       <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-                Compare to buy the right car
-              </h2>
-              <p className="text-gray-600">Get trusted used cars nearby</p>
-            </div>
-            <Link
-              to="/comparisons"
-              className="text-sm font-medium text-orange-600 flex items-center gap-2"
-            >
-              View All Car Comparisons
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10.293 15.707a1 1 0 010-1.414L13.586 11H3a1 1 0 110-2h10.586l-3.293-3.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </Link>
-          </div>
-
-          <div className="relative">
-            {/* Left arrow */}
-            <button
-              onClick={() => scroll(-1)}
-              aria-label="Scroll left"
-              className="hidden md:flex absolute -left-4 top-1/2 transform -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white shadow items-center justify-center"
-            >
-              <svg
-                className="w-5 h-5 text-gray-600"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M12.293 16.293a1 1 0 010-1.414L15.586 11H4a1 1 0 110-2h11.586l-3.293-3.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </button>
-
-            {/* Cards container */}
-            <div
-              ref={scrollRef}
-              className="no-scrollbar overflow-x-auto scroll-smooth py-2"
-              style={{ WebkitOverflowScrolling: "touch" }}
-            >
-              <div className="flex gap-6">
-                {comparePairs.map(([a, b], idx) => (
-                  <div
-                    key={`pair-${idx}`}
-                    className="min-w-[320px] md:min-w-[460px] bg-white rounded-2xl shadow-md p-4 flex-shrink-0 relative"
-                  >
-                    {/* Two images side-by-side */}
-                    <div className="flex gap-3 items-stretch">
-                      <div className="w-1/2 rounded-lg overflow-hidden bg-gray-50">
-                        <img
-                          src={a.image || a.images?.[0]}
-                          alt={a.name}
-                          className="w-full h-36 object-cover"
-                        />
-                        <div className="p-3">
-                          <div className="text-xs text-gray-500">{a.brand}</div>
-                          <div className="font-semibold">{a.name}</div>
-                          <div className="text-sm text-gray-600">
-                            ₹{parsePrice(a.price).toLocaleString()}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="relative w-1/2 rounded-lg overflow-hidden bg-gray-50">
-                        <img
-                          src={b.image || b.images?.[0]}
-                          alt={b.name}
-                          className="w-full h-36 object-cover"
-                        />
-                        <div className="p-3">
-                          <div className="text-xs text-gray-500">{b.brand}</div>
-                          <div className="font-semibold">{b.name}</div>
-                          <div className="text-sm text-gray-600">
-                            ₹{parsePrice(b.price).toLocaleString()}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* VS circle */}
-                    <div className="absolute left-1/2 -translate-x-1/2 -top-4 flex items-center justify-center">
-                      <div className="w-12 h-12 rounded-full bg-gray-800 text-white flex items-center justify-center shadow-lg">
-                        VS
-                      </div>
-                    </div>
-
-                    {/* CTA button */}
-                    <div className="mt-4">
-                      <Link
-                        to={`/compare?carA=${encodeURIComponent(
-                          a.name
-                        )}&carB=${encodeURIComponent(b.name)}`}
-                        className="block text-center border border-orange-400 text-orange-600 py-2 rounded-lg font-medium hover:bg-orange-50 transition"
-                      >
-                        {a.name} vs {b.name}
-                      </Link>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Right arrow */}
-            <button
-              onClick={() => scroll(1)}
-              aria-label="Scroll right"
-              className="hidden md:flex absolute -right-4 top-1/2 transform -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white shadow items-center justify-center"
-            >
-              <svg
-                className="w-5 h-5 text-gray-600"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M7.707 3.707a1 1 0 010 1.414L4.414 9H16a1 1 0 110 2H4.414l3.293 3.293a1 1 0 11-1.414 1.414l-5-5a1 1 0 010-1.414l5-5a1 1 0 011.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
+        <CompareCarsSection/>
         {/* Hide scrollbar for modern browsers */}
-        <style>{`
+        {/* <style>{`
           .no-scrollbar::-webkit-scrollbar { display: none; }
           .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        `}</style>
+        `}</style> */}
       </section>
 
       {/* Why Choose Us */}

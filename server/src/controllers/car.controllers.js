@@ -26,7 +26,6 @@ const carController = {
       throw new ApiError(400, "Car data and images are required");
     }
 
-    /* ---------------- PARSE JSON FIELDS ---------------- */
 
     const parseJSON = (value, fallback) => {
       if (typeof value === "string") {
@@ -56,13 +55,12 @@ const carController = {
 
     carData.features = parseJSON(carData.features, []);
 
-    /* ---------------- NUMBER FIELDS ---------------- */
     carData.price = Number(carData.price) || 0;
     carData.year = Number(carData.year) || null;
     carData.kmDriven = Number(carData.kmDriven) || 0;
     carData.seatingCapacity = Number(carData.seatingCapacity) || 0;
 
-    /* ---------------- IMAGE PATHS ---------------- */
+
     const uploadDir = path.join(process.cwd(), "public", "images", "cars");
     const watermarkPath = path.join(process.cwd(), "public", "watermark.png");
 
@@ -72,7 +70,7 @@ const carController = {
 
     const imagePaths = [];
 
-    /* ---------------- IMAGE PROCESSING ---------------- */
+   
     for (const file of carImages) {
       const inputPath = file.path;
       const wmFilename = `wm-${file.filename}`;
@@ -519,6 +517,87 @@ const carController = {
       .status(200)
       .json(new ApiResponse(200, formatted, "Category stats fetched"));
   }),
+
+ getCarsByBudget : async (req, res) => {
+  try {
+    const minPrice = Number(req.query.minPrice) || 0;
+    const maxPrice = Number(req.query.maxPrice) || 10000000;
+
+    const cars = await Car.aggregate([
+      
+      {
+        $addFields: {
+          priceNumber: {
+            $toDouble: {
+              $replaceAll: {
+                input: { $toString: "$price" },
+                find: ",",
+                replacement: "",
+              },
+            },
+          },
+        },
+      },
+
+      {
+        $match: {
+          priceNumber: { $gte: minPrice, $lte: maxPrice },
+          $or: [
+            { status: "approved" },
+            { status: "Approved" },
+            { status: "APPROVED" },
+          ],
+        },
+      },
+
+
+      {
+        $group: {
+          _id: {
+            brand: "$brand",
+            model: "$model",
+          },
+          startingPrice: { $min: "$priceNumber" },
+          availableCount: { $sum: 1 },
+          image: { $first: "$images" },
+        },
+      },
+
+      {
+        $project: {
+          _id: 0,
+          brand: "$_id.brand",
+          model: "$_id.model",
+          startingPrice: 1,
+          availableCount: 1,
+          image: {
+            $cond: {
+              if: { $isArray: "$image" },
+              then: { $arrayElemAt: ["$image", 0] },
+              else: "$image",
+            },
+          },
+        },
+      },
+
+      { $sort: { availableCount: -1, startingPrice: 1 } },
+      { $limit: 8 },
+    ]);
+    
+
+    res.status(200).json({
+      success: true,
+      data: cars,
+    });
+  } catch (error) {
+    console.error("❌ Budget cars error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch budget cars",
+    });
+  }
+}
+
 };
 
 export { carController };

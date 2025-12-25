@@ -15,6 +15,8 @@ const UpcomingCarsSection = () => {
     const fetch = async () => {
       try {
         const res = await getUpcomingCars();
+        
+        
         setCars(res.data || []);
       } finally {
         setLoading(false);

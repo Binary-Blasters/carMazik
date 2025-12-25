@@ -143,7 +143,7 @@ export const adminService = {
   },
 
   launchUpcomingCar: async (id) => {
-    return await axios.patch(`${BASE_URL}/admin/upcoming-cars/launch/${id}`, {
+    return await axios.patch(`${BASE_URL}/admin/upcoming-cars/launch/${id}`, {}, {
       withCredentials: true,
     });
   },
