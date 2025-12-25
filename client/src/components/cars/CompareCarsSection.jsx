@@ -144,7 +144,7 @@ const CompareCard = ({ a, b }) => (
     </div>
 
     <Link
-      to={`/compare/${makeSlug(a, b)}`}
+      to={`/compare?carA=${a._id}&carB=${b._id}`}
       className="block text-center border border-orange-400 text-orange-600 py-2 rounded-lg mt-4 font-medium hover:bg-orange-50"
     >
       {a.model} vs {b.model}

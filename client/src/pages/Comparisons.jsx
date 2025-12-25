@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { getComparePairs } from "../api/compare";
 import LoadingScreen from "../components/ui/LoadingScreen";
+import { makeSlug } from "../utils/makeSlug";
 
 const BASE_IMAGE_URL = import.meta.env.VITE_IMAGE_URL || "";
 
@@ -115,7 +116,7 @@ const CompareCard = ({ a, b }) => {
 
       {/* CTA */}
       <Link
-        to={`/compare/${slug}}`}
+        to={`/compare?carA=${a._id}&carB=${b._id}`}
         className="block mt-6 text-center border border-orange-400 text-orange-600 py-2 rounded-lg font-medium hover:bg-orange-50 transition"
       >
         {a.model} vs {b.model}

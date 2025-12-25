@@ -21,8 +21,11 @@ import axios from "axios";
 import { Progress } from "../../components/ui/progress";
 import CarCard from "../../components/CarCard";
 import { applyForSellerApi } from "../../api/seller";
+import BecomeSellerForm from "../../components/dashboard/user/section/BecomeSellerForm";
 
-const WishlistSection  = lazy(() => import ("../../components/dashboard/user/section/WishlistSection"))
+const WishlistSection = lazy(() =>
+  import("../../components/dashboard/user/section/WishlistSection")
+);
 
 const UserDashboard = () => {
   const dispatch = useDispatch();
@@ -45,8 +48,7 @@ const UserDashboard = () => {
     ifscCode: "",
     address: "",
   });
-
-
+  const TOTAL_STEPS = 5;
 
   useEffect(() => {
     dispatch(fetchProfile("user"));
@@ -119,35 +121,32 @@ const UserDashboard = () => {
     try {
       setApplying(true);
       await applyForSellerApi(sellerData);
-      alert("✅ Seller application submitted successfully!");
-      setSellerData({
-        shopName: "",
-        gstNumber: "",
-        panNumber: "",
-        aadhaarNumber: "",
-        accountNumber: "",
-        ifscCode: "",
-        address: "",
-      });
+      alert("✅ Seller application submitted");
       setStep(1);
-      setProgress(25);
+      setProgress(20);
     } catch {
-      alert("❌ Failed to submit application");
+      alert("❌ Failed to apply");
     } finally {
       setApplying(false);
     }
   };
 
   const nextStep = () => {
-    if (step < 4) {
+    if (step === 3 && sellerData.sellerTypes.length === 0) {
+      alert("Select at least one seller type");
+      return;
+    }
+
+    if (step < TOTAL_STEPS) {
       setStep(step + 1);
-      setProgress(progress + 25);
+      setProgress(progress + 20);
     }
   };
+
   const prevStep = () => {
     if (step > 1) {
       setStep(step - 1);
-      setProgress(progress - 25);
+      setProgress(progress - 20);
     }
   };
 
@@ -324,134 +323,10 @@ const UserDashboard = () => {
         )}
 
         {activeTab === "becomeSeller" && (
-          <div className="bg-white shadow-lg border border-gray-100 rounded-2xl p-6 md:p-8 transition-all duration-300">
-            <h3 className="text-2xl font-semibold mb-6 flex items-center gap-2 bg-gradient-to-r from-blue-600 to-orange-500 bg-clip-text text-transparent">
-              <Building className="h-6 w-6 text-orange-500" /> Become a Seller
-            </h3>
-
-            <Progress value={progress} className="mb-6" />
-
-            <form onSubmit={handleApplySeller} className="space-y-6">
-              {step === 1 && (
-                <div>
-                  <h4 className="text-lg font-semibold mb-3 text-gray-700">
-                    Step 1 — Business Info
-                  </h4>
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    {[
-                      "shopName",
-                      "gstNumber",
-                      "panNumber",
-                      "aadhaarNumber",
-                    ].map((f) => (
-                      <input
-                        key={f}
-                        type="text"
-                        placeholder={f.replace(/([A-Z])/g, " $1")}
-                        value={sellerData[f]}
-                        onChange={(e) =>
-                          setSellerData({ ...sellerData, [f]: e.target.value })
-                        }
-                        className="border border-gray-300 rounded-md p-3 w-full focus:ring-2 focus:ring-orange-400 outline-none"
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {step === 2 && (
-                <div>
-                  <h4 className="text-lg font-semibold mb-3 text-gray-700">
-                    Step 2 — Bank Details
-                  </h4>
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    {["accountNumber", "ifscCode"].map((f) => (
-                      <input
-                        key={f}
-                        type="text"
-                        placeholder={f.replace(/([A-Z])/g, " $1")}
-                        value={sellerData[f]}
-                        onChange={(e) =>
-                          setSellerData({ ...sellerData, [f]: e.target.value })
-                        }
-                        className="border border-gray-300 rounded-md p-3 w-full focus:ring-2 focus:ring-orange-400 outline-none"
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {step === 3 && (
-                <div>
-                  <h4 className="text-lg font-semibold mb-3 text-gray-700">
-                    Step 3 — Address
-                  </h4>
-                  <textarea
-                    placeholder="Business Address"
-                    rows="3"
-                    value={sellerData.address}
-                    onChange={(e) =>
-                      setSellerData({ ...sellerData, address: e.target.value })
-                    }
-                    className="border border-gray-300 rounded-md p-3 w-full focus:ring-2 focus:ring-orange-400 outline-none"
-                  />
-                </div>
-              )}
-
-              {step === 4 && (
-                <div>
-                  <h4 className="text-lg font-semibold mb-3 text-gray-700">
-                    Step 4 — Review
-                  </h4>
-                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 text-gray-800 text-sm sm:text-base space-y-1">
-                    {Object.entries(sellerData).map(([k, v]) => (
-                      <p key={k}>
-                        <strong>{k.replace(/([A-Z])/g, " $1")}:</strong>{" "}
-                        {v || "—"}
-                      </p>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="flex flex-col sm:flex-row justify-between pt-6 gap-3">
-                {step > 1 && (
-                  <button
-                    type="button"
-                    onClick={prevStep}
-                    className="px-4 py-2 border border-gray-300 rounded-md flex items-center justify-center gap-2 hover:bg-gray-50 transition"
-                  >
-                    <ArrowLeft className="h-4 w-4" /> Back
-                  </button>
-                )}
-                {step < 4 ? (
-                  <button
-                    type="button"
-                    onClick={nextStep}
-                    className="sm:ml-auto px-6 py-2 bg-gradient-to-r from-blue-600 to-orange-500 text-white rounded-md flex items-center justify-center gap-2 hover:opacity-90 transition"
-                  >
-                    Next <ArrowRight className="h-4 w-4" />
-                  </button>
-                ) : (
-                  <button
-                    type="submit"
-                    disabled={applying}
-                    className="sm:ml-auto px-6 py-2 bg-gradient-to-r from-green-600 to-green-500 text-white rounded-md flex items-center justify-center gap-2 hover:opacity-90 transition"
-                  >
-                    {applying ? (
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                      <CheckCircle2 className="h-5 w-5" />
-                    )}
-                    {applying ? "Applying..." : "Apply Now"}
-                  </button>
-                )}
-              </div>
-            </form>
-          </div>
+          <BecomeSellerForm/>
         )}
 
-        {activeTab === "wishlist" && <WishlistSection/>}
+        {activeTab === "wishlist" && <WishlistSection />}
       </main>
     </div>
   );

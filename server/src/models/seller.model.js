@@ -8,17 +8,17 @@ const sellerSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    name:{
-      type : String,
-      required : true
+    name: {
+      type: String,
+      required: true,
     },
-      email:{
-      type : String,
-      required : true
+    email: {
+      type: String,
+      required: true,
     },
-    phone:{
-      type : Number,
-      required : true
+    phone: {
+      type: Number,
+      required: true,
     },
     shopName: {
       type: String,
@@ -55,12 +55,17 @@ const sellerSchema = new mongoose.Schema(
       enum: ["pending", "approved", "rejected"],
       default: "pending",
     },
+    sellerTypes: {
+      type: [String],
+      enum: ["car", "spare"],
+      required: true,
+      default: ["car"],
+    },
 
-   
     subscription: {
       plan: {
         type: String,
-        enum: ["free", "basic", "standard", "premium", "enterprise"], 
+        enum: ["free", "basic", "standard", "premium", "enterprise"],
         default: "free",
       },
       startDate: Date,

@@ -2,6 +2,8 @@ import { Car } from "../models/car.models.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
+import { compareValue } from "../utils/compareUtils.js"
+import { generateVerdict } from "../utils/aiVerdict.js"
 
 const normalizeCar = (car) => ({
   _id: car._id,
@@ -60,68 +62,106 @@ export const getCompareDetails = asyncHandler(async (req, res) => {
   if (!carADetails || !carBDetails) {
     throw new ApiError(404, "One or both cars not found");
   }
-  
-  
-  return res
-    .status(200)
-    .json(
-      new ApiResponse(
-        200,
-        { carA: normalizeCar(carADetails), carB: normalizeCar(carBDetails) },
-        "Compare details fetched successfully"
-      )
-    );
-});
 
-export const compareCarsBySlug = asyncHandler( async(req, res) => {
-  
-    const slug = req.params.slug; // swift-vs-baleno
-    console.log("Slug:",slug);
-    
-    const [modelA, modelB] = slug.split(/-vs-+/i);
-    console.log("ModelA:",modelA);
-    
+  // 🔥 COMPARISON LOGIC
+  const comparison = {
+    price: {
+      a: compareValue(carADetails.price, carBDetails.price, "lower"),
+      b: compareValue(carBDetails.price, carADetails.price, "lower"),
+    },
+    mileage: {
+      a: compareValue(carADetails.mileage, carBDetails.mileage),
+      b: compareValue(carBDetails.mileage, carADetails.mileage),
+    },
+    year: {
+      a: compareValue(carADetails.year, carBDetails.year),
+      b: compareValue(carBDetails.year, carADetails.year),
+    },
+    fuelType: {
+      a: carADetails.fuelType === carBDetails.fuelType ? "equal" : "better",
+      b: carADetails.fuelType === carBDetails.fuelType ? "equal" : "better",
+    },
+    transmission: {
+      a:
+        carADetails.transmission === carBDetails.transmission
+          ? "equal"
+          : "better",
+      b:
+        carADetails.transmission === carBDetails.transmission
+          ? "equal"
+          : "better",
+    },
+  };
 
-    const cars = await Car.find({
-      model: { $in: [modelA, modelB] },
-      status: "approved",
-      isActive: true,
-    }).limit(2);
+  const verdict = generateVerdict(carADetails, carBDetails);
 
-    console.log("cars:", cars);
-    
-
-    if (cars.length < 2) {
-      throw new ApiError(404, "One or both cars not found for comparison");
-    }
-
-    const [carA, carB] = cars;
-
-    const comparison = {
-      price: {
-        a: compareValue(carA.price, carB.price, "lower"),
-        b: compareValue(carB.price, carA.price, "lower"),
-      },
-      mileage: {
-        a: compareValue(carA.mileage, carB.mileage),
-        b: compareValue(carB.mileage, carA.mileage),
-      },
-      year: {
-        a: compareValue(carA.year, carB.year),
-        b: compareValue(carB.year, carA.year),
-      },
-    };
-
-    const verdict = generateVerdict(carA, carB);
-
-    res.json({
-      success: true,
-      data: {
-        carA,
-        carB,
+  return res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        carA: normalizeCar(carADetails),
+        carB: normalizeCar(carBDetails),
         comparison,
         verdict,
       },
-    });
-  
+      "Compare details fetched successfully"
+    )
+  );
 });
+
+
+export const compareCarsBySlug = asyncHandler(async (req, res) => {
+  const slug = req.params.slug; // swift-vs-creta
+  console.log("Slug:", slug);
+
+  const [modelA, modelB] = slug.split(/-vs-+/i);
+  console.log("ModelA:", modelA, "ModelB:", modelB);
+
+  const cars = await Car.find({
+    model: {
+      $in: [
+        new RegExp(`^${modelA}$`, "i"),
+        new RegExp(`^${modelB}$`, "i"),
+      ],
+    },
+    status: "approved",
+    isSold: false, // ✅ CORRECT FIELD
+  }).limit(2);
+
+  console.log("cars:", cars);
+
+  if (cars.length < 2) {
+    throw new ApiError(404, "One or both cars not found for comparison");
+  }
+
+  const [carA, carB] = cars;
+
+  const comparison = {
+    price: {
+      a: compareValue(carA.price, carB.price, "lower"),
+      b: compareValue(carB.price, carA.price, "lower"),
+    },
+    mileage: {
+      a: compareValue(carA.mileage, carB.mileage),
+      b: compareValue(carB.mileage, carA.mileage),
+    },
+    year: {
+      a: compareValue(carA.year, carB.year),
+      b: compareValue(carB.year, carA.year),
+    },
+  };
+
+  const verdict = generateVerdict(carA, carB);
+
+  res.status(200).json({
+    success: true,
+    data: {
+      carA,
+      carB,
+      comparison,
+      verdict,
+    },
+  });
+});
+
+

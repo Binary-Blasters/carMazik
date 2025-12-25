@@ -3,6 +3,7 @@ import { verifyJWT } from "../middlewares/auth.middlewares.js";
 import { sellerController } from "../controllers/seller.controllers.js";
 import { checkSellerApproval } from "../middlewares/checkSellerApproval.middlewares.js";
 import { isSellerBlocked } from "../middlewares/isSellerBlocked.middlewares.js";
+import { requireSellerType } from "../middlewares/requireSellerType.js";
 
 const router = express.Router();
 
@@ -11,12 +12,14 @@ router
   .post(verifyJWT(), sellerController.applyForSeller) //checked
   .get(                                               //checked
     verifyJWT("seller"),
+    requireSellerType("car"),
     checkSellerApproval,
     isSellerBlocked,
     sellerController.getSellerProfile
   )
   .patch(                                             //checked
     verifyJWT("seller"),
+    requireSellerType("car"),
     checkSellerApproval,
     isSellerBlocked,
     sellerController.updateSellerProfile
@@ -25,6 +28,7 @@ router
 
   router.route("/approved/cars").get(                  //checked
     verifyJWT("seller"),
+    requireSellerType("car"),
     checkSellerApproval,
     isSellerBlocked,
     sellerController.getApprovedCars

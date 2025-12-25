@@ -4,6 +4,7 @@ import { checkSellerApproval } from "../middlewares/checkSellerApproval.middlewa
 import { upload } from "../middlewares/multer.middlewares.js";
 import { carController } from "../controllers/car.controllers.js";
 import { isSellerBlocked } from "../middlewares/isSellerBlocked.middlewares.js";
+import { requireSellerType } from "../middlewares/requireSellerType.js";
 
 const router = express.Router();
 
@@ -22,6 +23,7 @@ router.route("/:id").get(carController.getCarById); //checked
 router.route("/fuel-type/:fuelType/brands").get(carController.getBrandsByFuelType); //checked
 
 router.use(verifyJWT("seller")); 
+router.use(requireSellerType("car"));
 router.use(checkSellerApproval);
 router.use(isSellerBlocked);
 router

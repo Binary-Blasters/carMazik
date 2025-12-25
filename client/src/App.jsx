@@ -58,7 +58,7 @@ function App() {
 
               </Route>
               <Route path="/comparisons" element={<Comparisons />} />
-              <Route path="/compare/:slug" element={<ComparePage />} />
+              <Route path="/compare" element={<ComparePage />} />
               <Route path="/FAQs" element={<FAQ />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
